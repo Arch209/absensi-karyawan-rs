@@ -173,7 +173,7 @@
 
             if (u.includes("cleaning service") || u.includes("kasir")) return { label: "12 Jam", mins: 720 };
             if (karuList.includes(nama)) {
-                return isSabtu ? { label: "Karu (Sabtu 4j)", mins: 240 } : { label: "Karu (9j)", mins: 540 };
+                return isSabtu ? { label: "Karu (Sabtu 4 Jam)", mins: 240 } : { label: "Karu (8 Jam)", mins: 480 };
             }
             if (u.includes("perawat") || u.includes("rm") || u.includes("rekam medis")) return { label: "7 Jam", mins: 420 };
             return { label: "9 Jam", mins: 540 };
@@ -302,5 +302,6 @@
 </body>
 
 </html>
+
 
 
