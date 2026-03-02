@@ -11,34 +11,25 @@
     <style>
         .select2-container--default .select2-selection--single { height: 42px; padding-top: 6px; border-radius: 0.75rem; border-color: #e2e8f0; }
         .card { background: white; padding: 1.5rem; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border: 1px solid #e2e8f0; }
-        @media print { .no-print { display: none; } body { background: white; } }
+        @media print { .no-print { display: none !important; } body { background: white; } }
     </style>
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
     <div class="max-w-6xl mx-auto space-y-6">
         
-       <div class="flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-600">
+        <div class="flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-600">
             <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center overflow-hidden shadow-md border-2 border-blue-100">
-                    <img src="logo/logo.jpeg" 
-                         alt="Logo Fikri Lelaki Ganteng" 
-                         class="w-full h-full object-cover"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="hidden w-full h-full items-center justify-center text-white font-black text-xl fallback-logo">
-                        FLG
-                    </div>
-                </div>
+                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-blue-100">FLG</div>
                 <div>
-                    <h1 class="text-2xl font-black text-slate-800 leading-none uppercase">Rekap Absensi</h1>
+                    <h1 class="text-2xl font-black text-slate-800 leading-none uppercase tracking-tighter">Rekap Absensi</h1>
                     <p class="text-blue-600 font-bold tracking-widest text-xs mt-1 uppercase italic">By Fikri Lelaki Ganteng</p>
                 </div>
             </div>
             <div class="text-right hidden md:block">
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Database Lokal (Browser)</p>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Database Browser</p>
                 <p class="text-xs font-medium text-slate-500" id="currentDate"></p>
             </div>
         </div>
-        
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
             <div class="card border-blue-100">
@@ -52,77 +43,101 @@
             <div class="card border-orange-100 bg-orange-50/20">
                 <h2 class="text-xs font-black mb-4 flex items-center text-orange-700 uppercase tracking-widest">
                     <span class="bg-orange-600 text-white w-5 h-5 rounded-lg mr-2 flex items-center justify-center text-[10px]">2</span>
-                    Pengaturan Karu (Sabtu 4j)
+                    Daftar Karu (Sabtu 4j)
                 </h2>
                 <div class="flex gap-2 mb-3">
                     <select id="karuSelect" class="w-full"></select>
-                    <button id="btnAddKaru" class="bg-orange-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-orange-700">Tambah</button>
+                    <button id="btnAddKaru" class="bg-orange-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-orange-700 transition-all">Tambah</button>
                 </div>
                 <div id="karuListDisplay" class="flex flex-wrap gap-2"></div>
             </div>
         </div>
 
         <div id="mainDashboard" class="card hidden border-t-4 border-emerald-500">
+            <h2 class="text-xs font-black mb-6 text-emerald-700 uppercase tracking-widest">Detail Absensi Individu</h2>
             <div class="flex flex-col md:flex-row justify-between mb-8 gap-6">
                 <div class="w-full md:w-1/3 no-print">
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Cari Karyawan</label>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Pilih Karyawan</label>
                     <select id="nameSelect" class="w-full"></select>
-                    <button id="btnClearDB" class="mt-4 text-[10px] text-red-400 font-bold hover:text-red-600 uppercase tracking-tighter">[ Hapus Semua Data ]</button>
+                    <button id="btnClearDB" class="mt-4 text-[10px] text-red-400 font-bold hover:text-red-600 uppercase tracking-tighter">[ Reset Database ]</button>
                 </div>
                 <div class="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100 shadow-inner">
-                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Unit Kerja</p><p id="infoUnit" class="font-black text-xs text-slate-700">-</p></div>
-                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Aturan Jam</p><p id="infoJamKerja" class="font-black text-xs text-blue-600">-</p></div>
-                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Kehadiran</p><p id="totalHari" class="font-black text-xs text-slate-700">-</p></div>
-                    <div class="text-center border-l border-slate-200"><p class="text-[9px] text-slate-400 uppercase font-bold">Status</p><p class="text-[10px] text-emerald-600 bg-emerald-100 rounded px-2 py-0.5 inline-block font-black uppercase">Aktif</p></div>
+                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Unit</p><p id="infoUnit" class="font-black text-xs text-slate-700">-</p></div>
+                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Aturan</p><p id="infoJamKerja" class="font-black text-xs text-blue-600">-</p></div>
+                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Total Hari</p><p id="totalHari" class="font-black text-xs text-slate-700">-</p></div>
+                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Status</p><p class="text-[9px] text-emerald-600 bg-emerald-100 rounded px-2 py-0.5 inline-block font-black uppercase">AKTIF</p></div>
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-2xl border border-slate-200">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 mb-6">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest">
+                    <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest text-center">
                         <tr>
-                            <th class="p-4">Hari, Tanggal</th>
-                            <th class="p-4 text-center">Masuk</th>
-                            <th class="p-4 text-center">Pulang</th>
-                            <th class="p-4 text-center bg-red-900/40">Kurang</th>
-                            <th class="p-4 text-center bg-emerald-900/40">Lembur</th>
+                            <th class="p-4 text-left">Hari, Tanggal</th>
+                            <th class="p-4">Masuk</th>
+                            <th class="p-4">Pulang</th>
+                            <th class="p-4 bg-red-900/40">Kurang</th>
+                            <th class="p-4 bg-emerald-900/40">Lembur</th>
                         </tr>
                     </thead>
                     <tbody id="recapTableBody" class="divide-y divide-slate-100"></tbody>
                 </table>
             </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-red-50 p-5 rounded-2xl border-2 border-red-100 text-center">
+                    <p class="text-[10px] text-red-400 uppercase font-black tracking-widest mb-1">Total Kurang</p>
+                    <p id="totalKurangBox" class="font-black text-xl text-red-600">0m</p>
+                </div>
+                <div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-100 text-center">
+                    <p class="text-[10px] text-emerald-400 uppercase font-black tracking-widest mb-1">Total Lembur</p>
+                    <p id="totalLemburBox" class="font-black text-xl text-emerald-600">0m</p>
+                </div>
+                <div class="bg-blue-600 p-5 rounded-2xl border-2 border-blue-700 text-center">
+                    <p class="text-[10px] text-blue-100 uppercase font-black tracking-widest mb-1">Net Lembur</p>
+                    <p id="netLemburBox" class="font-black text-xl text-white">0m</p>
+                </div>
+            </div>
         </div>
 
         <div id="periodReport" class="card hidden border-t-4 border-indigo-600">
-             <h2 class="text-xs font-black mb-6 text-indigo-700 uppercase tracking-widest">Laporan Akumulasi Periode</h2>
+             <h2 class="text-xs font-black mb-6 text-indigo-700 uppercase tracking-widest">Laporan Rekapitulasi Periode</h2>
              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print">
-                <input type="date" id="startDate" class="p-3 rounded-xl border border-indigo-100 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold">
-                <input type="date" id="endDate" class="p-3 rounded-xl border border-indigo-100 text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold">
-                <button id="btnGenerateReport" class="bg-indigo-600 text-white font-black rounded-xl hover:bg-indigo-700 transition-all shadow-lg uppercase text-xs tracking-widest">Generate Laporan</button>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1">Mulai Tanggal</label>
+                    <input type="date" id="startDate" class="p-3 rounded-xl border border-indigo-100 text-sm font-bold outline-none">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1">Sampai Tanggal</label>
+                    <input type="date" id="endDate" class="p-3 rounded-xl border border-indigo-100 text-sm font-bold outline-none">
+                </div>
+                <div class="flex items-end">
+                    <button id="btnGenerateReport" class="w-full h-[46px] bg-indigo-600 text-white font-black rounded-xl hover:bg-indigo-700 transition-all uppercase text-xs tracking-widest shadow-lg">Tarik Laporan</button>
+                </div>
              </div>
+             
              <div class="overflow-x-auto rounded-2xl border border-slate-200">
                 <table class="w-full text-[11px] border-collapse">
                     <thead class="bg-indigo-50 text-indigo-900 uppercase font-black text-center">
                         <tr>
                             <th class="p-4 text-left">Nama Karyawan</th>
-                            <th class="p-4">Unit</th>
                             <th class="p-4">Hadir</th>
-                            <th class="p-4 text-red-600">Kurang</th>
-                            <th class="p-4 text-emerald-600">Lembur</th>
-                            <th class="p-4 bg-indigo-100">Net Lembur</th>
+                            <th class="p-4 text-red-600">Total Kurang</th>
+                            <th class="p-4 text-emerald-600">Total Lembur</th>
+                            <th class="p-4 bg-indigo-100">Net Lembur (Akhir)</th>
                         </tr>
                     </thead>
-                    <tbody id="periodTableBody" class="divide-y divide-slate-100"></tbody>
+                    <tbody id="periodTableBody" class="divide-y divide-slate-100">
+                        <tr><td colspan="5" class="p-10 text-center text-slate-400 italic">Pilih tanggal untuk melihat rekapan gaji.</td></tr>
+                    </tbody>
                 </table>
              </div>
         </div>
     </div>
 
     <script>
-        // INISIALISASI
         let masterDB = JSON.parse(localStorage.getItem('fikri_absensi_db')) || {};
         let karuList = JSON.parse(localStorage.getItem('karuList')) || [];
-        const TOLERANSI = 0;
 
         $(document).ready(function() {
             $('#currentDate').text(new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }));
@@ -130,7 +145,6 @@
             renderKaruList();
         });
 
-        // FUNGSI UTAMA
         function clean(t) { return t.replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim(); }
 
         $('#fileInput').on('change', function(e) {
@@ -151,8 +165,7 @@
                     if (!masterDB[nama].logs[tgl].includes(jam)) masterDB[nama].logs[tgl].push(jam);
                 });
                 localStorage.setItem('fikri_absensi_db', JSON.stringify(masterDB));
-                alert("Sipp! Data Berhasil Diimport yaa Fikri Ganteng!");
-                refreshUI();
+                location.reload(); 
             };
             reader.readAsText(e.target.files[0]);
         });
@@ -170,93 +183,65 @@
                 const d = new Date(p[2], p[1]-1, p[0]);
                 isSabtu = d.getDay() === 6;
             }
-
-            // 1. Cleaning Service & Kasir (Selalu 12 Jam)
-            if (u.includes("cleaning service") || u.includes("kasir")) {
-                return { label: "12 Jam", mins: 720 };
-            }
-
-            // 2. Jika dia Karu (Terlepas dari Unit Apapun)
-            if (karuList.includes(nama)) {
-                return isSabtu ? { label: "Karu (Sabtu 4j)", mins: 240 } : { label: "Karu (8j)", mins: 480 };
-            }
-
-            // 3. Perawat / RM (7 Jam, tapi Sabtu 4 Jam)
-            if (u.includes("perawat") || u.includes("rm") || u.includes("rekam medis")) {
-                return isSabtu ? { label: "Sabtu 4j", mins: 240 } : { label: "7 Jam", mins: 420 };
-            }
-
-            // 4. Office, Tanpa Unit, atau Lainnya (8 Jam, Sabtu 4 Jam)
+            if (u.includes("cleaning service") || u.includes("kasir")) return { label: "12 Jam", mins: 720 };
+            if (karuList.includes(nama)) return isSabtu ? { label: "Karu (Sabtu 4j)", mins: 240 } : { label: "Karu (8j)", mins: 480 };
+            if (u.includes("perawat") || u.includes("rm") || u.includes("rekam medis")) return isSabtu ? { label: "Sabtu 4j", mins: 240 } : { label: "7 Jam", mins: 420 };
             return isSabtu ? { label: "Sabtu 4j", mins: 240 } : { label: "8 Jam", mins: 480 };
         }
 
         function hitung(msk, plg, stdMins) {
-            if (!plg || plg === "-") return { ks: "0m", ls: "0m", k: 0, l: 0 };
-            
-            const toM = (s) => { 
-                const p = s.split(':'); 
-                return parseInt(p[0]) * 60 + parseInt(p[1]); 
-            };
-
-            const menitMasuk = msk ? msk.substring(0, 5) : "00:00";
-            const menitPulang = plg ? plg.substring(0, 5) : "00:00";
-
-            // Total durasi kerja dalam menit
-            let durasiKerja = toM(menitPulang) - toM(menitMasuk);
-            
-            let l = 0, k = 0;
-            
-            if (durasiKerja > stdMins) {
-                l = durasiKerja - stdMins; // Lembur jika lebih dari standar
-            } else if (durasiKerja < stdMins) {
-                k = stdMins - durasiKerja; // Kurang jika kurang dari standar
+            // LOGIKA FILTER: Jika tidak ada scan pulang, maka Kurang = 0 & Lembur = 0 (Abaikan Hari Itu)
+            if (!plg || plg === "-" || plg === msk) {
+                return { ks: "Bln Scan", ls: "0m", k: 0, l: 0, skip: true };
             }
 
-            const format = (m) => {
-                const jam = Math.floor(m / 60);
-                const menit = m % 60;
-                if (jam > 0) return `${jam}j ${menit}m`;
-                return `${menit}m`;
-            };
+            const toM = (s) => { const p = s.split(':'); return parseInt(p[0]) * 60 + parseInt(p[1]); };
+            let mIn = toM(msk), mOut = toM(plg);
+            if (mOut < mIn) mOut += 1440; 
 
-            return { 
-                ks: k > 0 ? format(k) : "0m", 
-                ls: l > 0 ? format(l) : "0m", 
-                k: k, 
-                l: l 
+            let durasi = mOut - mIn;
+            let l = 0, k = 0;
+            if (durasi > stdMins) l = durasi - stdMins;
+            else if (durasi < stdMins) k = stdMins - durasi;
+
+            const fmt = (m) => {
+                const j = Math.floor(m/60), mn = m%60;
+                return j > 0 ? `${j}j ${mn}m` : `${mn}m`;
             };
+            return { ks: k > 0 ? fmt(k) : "0m", ls: l > 0 ? fmt(l) : "0m", k, l, skip: false };
         }
 
         function initDropdowns() {
             const names = Object.keys(masterDB).sort();
             const s1 = $('#nameSelect').empty().append('<option></option>');
             const s2 = $('#karuSelect').empty().append('<option></option>');
-            names.forEach(n => {
-                s1.append(`<option value="${n}">${n}</option>`);
-                s2.append(`<option value="${n}">${n}</option>`);
-            });
-            s1.select2({ placeholder: "Pilih Karyawan", width: '100%' });
-            s2.select2({ placeholder: "Pilih Nama Karu", width: '100%' });
+            names.forEach(n => { s1.append(`<option value="${n}">${n}</option>`); s2.append(`<option value="${n}">${n}</option>`); });
+            s1.select2({ placeholder: "Cari Nama...", width: '100%' });
+            s2.select2({ placeholder: "Pilih Nama Karu...", width: '100%' });
         }
 
         $('#nameSelect').on('change', function() {
             const n = $(this).val();
             const u = masterDB[n];
             if(!u) return;
-
-            $('#infoUnit').text(u.unit);
+            $('#infoUnit').text(u.unit || "-");
             const dates = Object.keys(u.logs).sort((a,b) => new Date(a.split('-').reverse().join('-')) - new Date(b.split('-').reverse().join('-')));
             $('#totalHari').text(dates.length + " Hari");
-
+            
             const tbody = $('#recapTableBody').empty();
+            let totalK = 0, totalL = 0;
+
             dates.forEach(t => {
                 const lgs = u.logs[t].sort();
                 const m = lgs[0], p = lgs.length > 1 ? lgs[lgs.length-1] : "-";
                 const cfg = getUserConfig(n, u.unit, t);
                 const r = hitung(m, p, cfg.mins);
-                const hari = new Date(t.split('-').reverse().join('-')).toLocaleDateString('id-ID', { weekday: 'long' });
                 
-                tbody.append(`<tr class="text-center hover:bg-slate-50">
+                totalK += r.k;
+                totalL += r.l;
+
+                const hari = new Date(t.split('-').reverse().join('-')).toLocaleDateString('id-ID', { weekday: 'long' });
+                tbody.append(`<tr class="text-center hover:bg-slate-50 transition-colors">
                     <td class="p-4 text-left font-medium"><span class="${hari==='Sabtu'?'text-orange-600 font-black':'text-blue-600'} font-bold">${hari}</span>, ${t}</td>
                     <td class="p-4 font-mono font-bold text-emerald-600">${m}</td>
                     <td class="p-4 font-mono font-bold text-blue-600">${p}</td>
@@ -264,46 +249,54 @@
                     <td class="p-4 text-emerald-700 font-bold bg-emerald-50/40">${r.ls}</td>
                 </tr>`);
             });
+
+            const fmtF = (m) => { const a = Math.abs(m); return `${m<0?'-':''}${Math.floor(a/60)}j ${a%60}m`; };
+            $('#totalKurangBox').text(fmtF(totalK));
+            $('#totalLemburBox').text(fmtF(totalL));
+            $('#netLemburBox').text(fmtF(totalL - totalK));
             $('#infoJamKerja').text(getUserConfig(n, u.unit, dates[0]).label);
         });
 
-        // REPORT GENERATOR
         $('#btnGenerateReport').on('click', function() {
             const s = $('#startDate').val(), e = $('#endDate').val();
-            if (!s || !e) return alert("Pilih Tanggal Dulu!");
+            if (!s || !e) return alert("Pilih Tanggal dulu, Pak!");
             const dS = new Date(s), dE = new Date(e);
             const tbody = $('#periodTableBody').empty();
 
             Object.keys(masterDB).sort().forEach(nama => {
                 const u = masterDB[nama];
-                let tk = 0, tl = 0, hadir = 0;
+                let tk = 0, tl = 0, h = 0;
+
                 Object.keys(u.logs).forEach(t => {
                     const [dd, mm, yy] = t.split('-').map(Number);
                     const logDate = new Date(yy, mm-1, dd);
                     if (logDate >= dS && logDate <= dE) {
-                        hadir++;
+                        h++;
                         const lgs = u.logs[t].sort();
                         const cfg = getUserConfig(nama, u.unit, t);
-                        const r = hitung(lgs[0], lgs.length > 1 ? lgs[lgs.length-1] : null, cfg.mins);
+                        // Menggunakan fungsi hitung yang sama (mengabaikan Bln Scan)
+                        const r = hitung(lgs[0], lgs.length > 1 ? lgs[lgs.length-1] : "-", cfg.mins);
                         tk += r.k; tl += r.l;
                     }
                 });
-                if (hadir > 0) {
+
+                if (h > 0) {
                     const net = tl - tk;
-                    const f = (m) => { const a = Math.abs(m); return `${m<0?'-':''}${Math.floor(a/60)}j ${a%60}m`; };
-                    tbody.append(`<tr class="text-center hover:bg-indigo-50 font-medium">
-                        <td class="p-4 text-left font-black uppercase text-slate-700">${nama}</td>
-                        <td class="p-4 text-[9px] text-slate-400 font-bold uppercase">${u.unit}</td>
-                        <td class="p-4">${hadir} Hari</td>
-                        <td class="p-4 text-red-600 font-bold">${f(tk)}</td>
-                        <td class="p-4 text-emerald-600 font-bold">${f(tl)}</td>
-                        <td class="p-4 font-black bg-indigo-50 ${net>=0?'text-indigo-700':'text-orange-600'}">${f(net)}</td>
+                    const f = (m) => { 
+                        const a = Math.abs(m); 
+                        return `${m < 0 ? '-' : ''}${Math.floor(a / 60)}j ${a % 60}m`;
+                    };
+                    tbody.append(`<tr class="text-center hover:bg-indigo-50 font-bold uppercase transition-colors">
+                        <td class="p-4 text-left text-slate-700 font-black">${nama}</td>
+                        <td class="p-4 text-slate-500">${h} Hr</td>
+                        <td class="p-4 text-red-600">${f(tk)}</td>
+                        <td class="p-4 text-emerald-600">${f(tl)}</td>
+                        <td class="p-4 bg-indigo-50 ${net >= 0 ? 'text-indigo-700' : 'text-orange-600'}">${f(net)}</td>
                     </tr>`);
                 }
             });
         });
 
-        // KARU MANAGEMENT
         $('#btnAddKaru').on('click', function() {
             const n = $('#karuSelect').val();
             if (n && !karuList.includes(n)) {
@@ -317,8 +310,8 @@
         function renderKaruList() {
             const c = $('#karuListDisplay').empty();
             karuList.forEach((n, i) => {
-                c.append(`<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-xl text-[10px] font-black flex items-center shadow-sm border border-orange-200 uppercase">
-                    ${n} <button onclick="removeKaru(${i})" class="ml-2 text-orange-500 font-black">×</button>
+                c.append(`<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-xl text-[10px] font-black border border-orange-200 uppercase flex items-center shadow-sm">
+                    ${n} <button onclick="removeKaru(${i})" class="ml-2 text-orange-400 hover:text-red-600">×</button>
                 </span>`);
             });
         }
@@ -331,16 +324,11 @@
         };
 
         $('#btnClearDB').on('click', function() {
-            if(confirm("Hapus semua data absensi?")) {
+            if(confirm("Hapus semua data absensi di browser ini?")) {
                 localStorage.removeItem('fikri_absensi_db');
                 location.reload();
             }
         });
     </script>
 </body>
-
 </html>
-
-
-
-
