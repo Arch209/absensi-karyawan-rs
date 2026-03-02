@@ -122,7 +122,7 @@
         // INISIALISASI
         let masterDB = JSON.parse(localStorage.getItem('fikri_absensi_db')) || {};
         let karuList = JSON.parse(localStorage.getItem('karuList')) || [];
-        const TOLERANSI = 15;
+        const TOLERANSI = 0;
 
         $(document).ready(function() {
             $('#currentDate').text(new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }));
@@ -192,12 +192,39 @@
 
         function hitung(msk, plg, stdMins) {
             if (!plg || plg === "-") return { ks: "0m", ls: "0m", k: 0, l: 0 };
-            const toM = (s) => { const p = s.split(':'); return parseInt(p[0]) * 60 + parseInt(p[1]); };
-            let d = toM(plg) - toM(msk);
-            if (Math.abs(d - stdMins) <= TOLERANSI) d = stdMins;
-            let l = d > stdMins ? d - stdMins : 0, k = d < stdMins ? stdMins - d : 0;
-            const format = (m) => m >= 60 ? `${Math.floor(m/60)}j ${m%60}m` : `${m}m`;
-            return { ks: k > 0 ? format(k) : "0m", ls: l > 0 ? format(l) : "0m", k, l };
+            
+            const toM = (s) => { 
+                const p = s.split(':'); 
+                return parseInt(p[0]) * 60 + parseInt(p[1]); 
+            };
+
+            const menitMasuk = msk ? msk.substring(0, 5) : "00:00";
+            const menitPulang = plg ? plg.substring(0, 5) : "00:00";
+
+            // Total durasi kerja dalam menit
+            let durasiKerja = toM(menitPulang) - toM(menitMasuk);
+            
+            let l = 0, k = 0;
+            
+            if (durasiKerja > stdMins) {
+                l = durasiKerja - stdMins; // Lembur jika lebih dari standar
+            } else if (durasiKerja < stdMins) {
+                k = stdMins - durasiKerja; // Kurang jika kurang dari standar
+            }
+
+            const format = (m) => {
+                const jam = Math.floor(m / 60);
+                const menit = m % 60;
+                if (jam > 0) return `${jam}j ${menit}m`;
+                return `${menit}m`;
+            };
+
+            return { 
+                ks: k > 0 ? format(k) : "0m", 
+                ls: l > 0 ? format(l) : "0m", 
+                k: k, 
+                l: l 
+            };
         }
 
         function initDropdowns() {
@@ -313,7 +340,6 @@
 </body>
 
 </html>
-
 
 
 
