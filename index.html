@@ -171,13 +171,23 @@
                 isSabtu = d.getDay() === 6;
             }
 
-            if (u.includes("cleaning service") || u.includes("kasir")) return { label: "12 Jam", mins: 720 };
-            if (karuList.includes(nama)) {
-                return isSabtu ? { label: "Karu (Sabtu 4 Jam)", mins: 240 } : { label: "Karu (8 Jam)", mins: 480 };
+            // 1. Cleaning Service & Kasir (Selalu 12 Jam)
+            if (u.includes("cleaning service") || u.includes("kasir")) {
+                return { label: "12 Jam", mins: 720 };
             }
-            if (u.includes("perawat") || u.includes("rm") || u.includes("rekam medis")) return { label: "7 Jam", mins: 420 };
-            return { label: "9 Jam", mins: 540 };
-            return { label: "8 Jam", mins: 480 };
+
+            // 2. Jika dia Karu (Terlepas dari Unit Apapun)
+            if (karuList.includes(nama)) {
+                return isSabtu ? { label: "Karu (Sabtu 4j)", mins: 240 } : { label: "Karu (8j)", mins: 480 };
+            }
+
+            // 3. Perawat / RM (7 Jam, tapi Sabtu 4 Jam)
+            if (u.includes("perawat") || u.includes("rm") || u.includes("rekam medis")) {
+                return isSabtu ? { label: "Sabtu 4j", mins: 240 } : { label: "7 Jam", mins: 420 };
+            }
+
+            // 4. Office, Tanpa Unit, atau Lainnya (8 Jam, Sabtu 4 Jam)
+            return isSabtu ? { label: "Sabtu 4j", mins: 240 } : { label: "8 Jam", mins: 480 };
         }
 
         function hitung(msk, plg, stdMins) {
@@ -303,6 +313,7 @@
 </body>
 
 </html>
+
 
 
 
