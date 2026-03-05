@@ -105,7 +105,7 @@
 
         <div id="periodReport" class="card hidden border-t-4 border-indigo-600">
              <h2 class="text-xs font-black mb-6 text-indigo-700 uppercase tracking-widest">Laporan Akumulasi Periode</h2>
-             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print">
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
                 <div class="flex flex-col">
                     <label class="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1">Dari Tanggal</label>
                     <input type="date" id="startDate" class="p-3 rounded-xl border border-indigo-100 text-sm font-bold outline-none">
@@ -113,6 +113,10 @@
                 <div class="flex flex-col">
                     <label class="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1">Sampai Tanggal</label>
                     <input type="date" id="endDate" class="p-3 rounded-xl border border-indigo-100 text-sm font-bold outline-none">
+                </div>
+                <div class="flex flex-col">
+                    <label class="text-[9px] font-bold text-slate-400 uppercase ml-1 mb-1">Filter Unit</label>
+                    <select id="unitFilterSelect" class="w-full"></select>
                 </div>
                 <div class="flex items-end">
                     <button id="btnGenerateReport" class="w-full h-[46px] bg-indigo-600 text-white font-black rounded-xl hover:bg-indigo-700 transition-all uppercase text-xs tracking-widest shadow-lg">Generate Laporan</button>
@@ -124,6 +128,7 @@
                     <thead class="bg-indigo-50 text-indigo-900 uppercase font-black text-center">
                         <tr>
                             <th class="p-4 text-left">Nama Karyawan</th>
+                            <th class="p-4 text-left">Unit</th>
                             <th class="p-4">Hadir</th>
                             <th class="p-4 text-red-600">Kurang</th>
                             <th class="p-4 text-emerald-600">Lembur</th>
@@ -131,7 +136,7 @@
                         </tr>
                     </thead>
                     <tbody id="periodTableBody" class="divide-y divide-slate-100">
-                        <tr><td colspan="5" class="p-10 text-center text-slate-400 italic font-bold uppercase tracking-widest">Tarik Laporan Berdasarkan Periode</td></tr>
+                        <tr><td colspan="6" class="p-10 text-center text-slate-400 italic font-bold uppercase tracking-widest">Tarik Laporan Berdasarkan Periode</td></tr>
                     </tbody>
                 </table>
              </div>
@@ -192,7 +197,6 @@
         }
 
         function hitung(msk, plg, stdMins) {
-            // LOGIKA FILTER: Abaikan hari tanpa scan pulang (0 kurang, 0 lembur)
             if (!plg || plg === "-" || plg === msk) return { ks: "Bln Scan", ls: "0m", k: 0, l: 0 };
             const toM = (s) => { const p = s.split(':'); return parseInt(p[0]) * 60 + parseInt(p[1]); };
             let mIn = toM(msk), mOut = toM(plg);
@@ -207,11 +211,24 @@
 
         function initDropdowns() {
             const names = Object.keys(masterDB).sort();
+            const units = [...new Set(Object.values(masterDB).map(x => x.unit))].sort();
+
             const s1 = $('#nameSelect').empty().append('<option></option>');
             const s2 = $('#karuSelect').empty().append('<option></option>');
-            names.forEach(n => { s1.append(`<option value="${n}">${n}</option>`); s2.append(`<option value="${n}">${n}</option>`); });
+            const s3 = $('#unitFilterSelect').empty().append('<option value="">Semua Unit</option>');
+
+            names.forEach(n => { 
+                s1.append(`<option value="${n}">${n}</option>`); 
+                s2.append(`<option value="${n}">${n}</option>`); 
+            });
+
+            units.forEach(u => {
+                if(u) s3.append(`<option value="${u}">${u}</option>`);
+            });
+
             s1.select2({ placeholder: "Pilih Karyawan...", width: '100%' });
             s2.select2({ placeholder: "Pilih Nama Karu...", width: '100%' });
+            s3.select2({ placeholder: "Pilih Unit...", width: '100%' });
         }
 
         $('#nameSelect').on('change', function() {
@@ -247,11 +264,18 @@
 
         $('#btnGenerateReport').on('click', function() {
             const s = $('#startDate').val(), e = $('#endDate').val();
+            const filterUnit = $('#unitFilterSelect').val();
+            
             if (!s || !e) return alert("Pilih Tanggal dulu, Pak!");
             const dS = new Date(s), dE = new Date(e);
             const tbody = $('#periodTableBody').empty();
+
             Object.keys(masterDB).sort().forEach(nama => {
                 const u = masterDB[nama];
+                
+                // Cek filter Unit
+                if (filterUnit && u.unit !== filterUnit) return;
+
                 let tk = 0, tl = 0, h = 0;
                 Object.keys(u.logs).forEach(t => {
                     const [dd, mm, yy] = t.split('-').map(Number);
@@ -268,6 +292,7 @@
                     const f = (m) => { const a = Math.abs(m); return `${m < 0 ? '-' : ''}${Math.floor(a/60)}j ${a%60}m`; };
                     tbody.append(`<tr class="text-center font-bold uppercase transition-colors hover:bg-slate-50">
                         <td class="p-4 text-left text-slate-800">${nama}</td>
+                        <td class="p-4 text-left text-slate-500 text-[9px]">${u.unit || "-"}</td>
                         <td class="p-4 text-slate-500">${h} Hari</td>
                         <td class="p-4 text-red-600">${f(tk)}</td>
                         <td class="p-4 text-emerald-600">${f(tl)}</td>
@@ -275,6 +300,9 @@
                     </tr>`);
                 }
             });
+            if (tbody.children().length === 0) {
+                tbody.append('<tr><td colspan="6" class="p-10 text-center text-slate-400">Tidak ada data untuk unit/periode ini</td></tr>');
+            }
         });
 
         $('#btnAddKaru').on('click', function() {
