@@ -1,356 +1,829 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Rekap Absensi - Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <style>
-        .select2-container--default .select2-selection--single { height: 42px; padding-top: 6px; border-radius: 0.75rem; border-color: #e2e8f0; }
-        .card { background: white; padding: 1.5rem; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border: 1px solid #e2e8f0; }
-        @media print { .no-print { display: none !important; } body { background: white; } }
-        .modal-overlay { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-    </style>
-</head>
-<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
 
-    <div id="unitModal" class="modal-overlay" onclick="closeModal()">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl mx-4" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-black text-indigo-700 uppercase tracking-widest text-sm">Riwayat Penempatan Unit</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-red-500 font-bold text-2xl">&times;</button>
-            </div>
-            <div id="unitHistoryContent" class="space-y-2 text-xs max-h-60 overflow-y-auto pr-2"></div>
-            <button onclick="closeModal()" class="mt-6 w-full bg-slate-800 text-white py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest">Tutup</button>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#f1f5f9;--bg2:#ffffff;--bg3:#f8fafc;
+--text:#1551db;--text2:#475569;--text3:#94a3b8;
+--border:#e2e8f0;--border2:#cbd5e1;
+--blue:#2563eb;--blue-bg:#eff6ff;--blue-text:#1e40af;
+--green:#16a34a;--green-bg:#f0fdf4;--green-text:#166534;
+--red:#dc2626;--red-bg:#fef2f2;--red-text:#991b1b;
+--amber:#d97706;--amber-bg:#fffbeb;--amber-text:#92400e;
+--indigo:#4f46e5;--indigo-bg:#eef2ff;--indigo-text:#3730a3;
+--sidebar:#363062;--sidebar-text:#ffffff;--sidebar-active:#1b0092;
+--radius:8px;--radius-lg:12px;
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;min-height:600px}
+.app{display:flex;height:100vh;min-height:600px;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:200px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar-logo{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo-row{display:flex;align-items:center;gap:8px}
+.logo-icon{width:32px;height:32px;background:#2563eb;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
+.logo-name{color:#fff;font-weight:700;font-size:13px;line-height:1.2}
+.logo-sub{color:#64748b;font-size:10px}
+.sidebar-nav{padding:8px 8px;flex:1}
+.nav-section{color:#475569;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:10px 8px 4px}
+.nav-btn{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;border-radius:var(--radius);border:none;background:none;color:var(--sidebar-text);cursor:pointer;font-size:12px;font-weight:500;text-align:left;transition:all .15s;margin-bottom:1px}
+.nav-btn:hover{background:rgba(255,255,255,.07);color:#e2e8f0}
+.nav-btn.active{background:#4D4C7D;color:#fff}
+.nav-btn .ni{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:10px 8px;border-top:1px solid rgba(255,255,255,.08)}
+.footer-btn{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border-radius:var(--radius);border:none;background:none;color:#64748b;cursor:pointer;font-size:11px;font-weight:500;text-align:left;transition:all .15s;margin-bottom:2px}
+.footer-btn:hover{background:rgba(255,255,255,.07);color:#94a3b8}
+.admin-tag{background:#1e3a5f;color:#60a5fa;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:auto}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:700;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--text3)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.badge-blue{background:var(--blue-bg);color:var(--blue-text)}
+.badge-green{background:var(--green-bg);color:var(--green-text)}
+.badge-red{background:var(--red-bg);color:var(--red-text)}
+.badge-amber{background:var(--amber-bg);color:var(--amber-text)}
+.badge-gray{background:#f1f5f9;color:#475569}
+.badge-indigo{background:var(--indigo-bg);color:var(--indigo-text)}
+
+.content{flex:1;overflow-y:auto;padding:16px}
+.page{display:none}.page.active{display:block}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);margin-bottom:12px}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.grid-5{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);gap:12px}
+
+/* STAT CARDS */
+.stat{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:4px}
+.stat-val{font-size:26px;font-weight:800;line-height:1}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f8fafc;color:var(--text2);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+
+/* FORMS */
+.form-row{margin-bottom:10px}
+.form-row label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px}
+input[type=text],input[type=number],input[type=date],input[type=file],select,textarea{width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:inherit;background:#fff;color:var(--text);outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+textarea{height:64px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--radius);border:1.5px solid var(--border2);background:#fff;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.btn:hover{background:#f8fafc}
+.btn:active{transform:scale(.97)}
+.btn-blue{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-blue:hover{background:#1d4ed8}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover{background:#15803d}
+.btn-red{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-indigo{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-xs{padding:3px 7px;font-size:10px}
+.flex-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ml-auto{margin-left:auto}
+
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.filter-bar input,.filter-bar select{width:auto;min-width:120px;padding:6px 9px;font-size:12px}
+.filter-bar input{min-width:160px}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding-top:10px;font-size:11px;color:var(--text3)}
+.pag-btns{display:flex;gap:3px}
+.pag-btn{padding:3px 8px;border:1px solid var(--border);border-radius:5px;background:#fff;cursor:pointer;font-size:11px;color:var(--text2)}
+.pag-btn:hover{background:#f1f5f9}
+.pag-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);padding:20px;width:420px;max-width:92vw;max-height:85vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.modal-title{font-size:14px;font-weight:700}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text3);line-height:1;padding:2px 6px;border-radius:4px}
+.modal-close:hover{background:#fee2e2;color:#dc2626}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* TOAST */
+.toast-area{position:fixed;bottom:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{background:#0f172a;color:#fff;padding:10px 16px;border-radius:var(--radius);font-size:12px;font-weight:500;opacity:0;transform:translateY(6px);transition:all .3s;max-width:280px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.green{background:#166534;border-left:3px solid #22c55e}
+.toast.red{background:#991b1b;border-left:3px solid #ef4444}
+.toast.blue{background:#1e40af;border-left:3px solid #3b82f6}
+
+/* ABSENSI specific */
+.mono{font-family:monospace;font-size:11px}
+.kurang-cell{color:#dc2626;font-weight:700}
+.lembur-cell{color:#16a34a;font-weight:700}
+.summary-box{border-radius:var(--radius-lg);padding:12px 16px;text-align:center}
+.avatar{width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.unit-pill{display:inline-block;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600}
+</style>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-row">
+      <div class="logo-icon">RS</div>
+      <div><div class="logo-name">SIMRS</div><div class="logo-sub">Sistem IT RS</div></div>
+    </div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-section">Menu Utama</div>
+    <button class="nav-btn active" data-page="dashboard" onclick="nav(this)"><span class="ni">📊</span>Dashboard</button>
+    <button class="nav-btn" data-page="ticketing" onclick="nav(this)"><span class="ni">🎫</span>Ticketing IT</button>
+    <button class="nav-btn" data-page="absensi" onclick="nav(this)"><span class="ni">🕐</span>Absensi</button>
+    <div class="nav-section">Admin</div>
+    <button class="nav-btn admin-menu" data-page="karyawan" onclick="nav(this)"><span class="ni">👥</span>Karyawan</button>
+    <button class="nav-btn admin-menu" data-page="logistik" onclick="nav(this)"><span class="ni">📦</span>Logistik ATK</button>
+    <button class="nav-btn admin-menu" data-page="casmix" onclick="nav(this)"><span class="ni">🗂️</span>Berkas Pasien</button>
+  </div>
+  <div class="sidebar-footer">
+    <button class="footer-btn" onclick="toggleAdmin()" id="admin-btn"><span>🔐</span><span id="admin-label">Login Admin</span></button>
+    <button class="footer-btn" onclick="toggleDark()" id="dark-btn"><span>🌙</span><span id="dark-label">Dark Mode</span></button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-sub" id="page-date"></div>
+    </div>
+    <div class="topbar-right">
+      <span id="mode-badge" class="badge badge-gray">Guest</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ======== DASHBOARD ======== -->
+    <div class="page active" id="pg-dashboard">
+      <div class="grid-4" style="margin-bottom:14px">
+        <div class="stat"><div class="stat-label">Tiket Baru</div><div class="stat-val" style="color:var(--red)" id="d-tiket-baru">0</div><div class="stat-sub">menunggu</div></div>
+        <div class="stat"><div class="stat-label">Sedang Proses</div><div class="stat-val" style="color:var(--amber)" id="d-tiket-proses">0</div><div class="stat-sub">ditangani</div></div>
+        <div class="stat"><div class="stat-label">Selesai</div><div class="stat-val" style="color:var(--green)" id="d-tiket-done">0</div><div class="stat-sub">terselesaikan</div></div>
+        <div class="stat" style="background:#363062"><div class="stat-label" style="color:#93c5fd">Karyawan</div><div class="stat-val" style="color:#fff" id="d-kar">210</div><div class="stat-sub" style="color:#93c5fd">terdaftar</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Tiket IT Terbaru</div>
+          <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Unit</th><th>Kendala</th><th>Status</th></tr></thead><tbody id="d-tiket-tbody"></tbody></table></div>
         </div>
+        <div>
+          <div class="card">
+            <div class="card-title">Stok Kritis</div>
+            <div id="d-stok-list"></div>
+          </div>
+          <div class="card" style="background:#363062">
+            <div class="card-title" style="color:#64748b">Absensi Data</div>
+            <div style="color:#94a3b8;font-size:12px" id="d-abs-info">Import file absensi untuk melihat data.</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="max-w-6xl mx-auto space-y-6">
-        <div class="flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-600">
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center overflow-hidden shadow-md border-2 border-blue-100">
-                    <img src="logo/logo.jpeg" alt="Logo" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <span class="hidden text-white font-black text-2xl">FA</span>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-black text-slate-800 leading-none uppercase tracking-tighter">Rekap Absensi</h1>
-                    <p class="text-blue-600 font-bold tracking-widest text-xs mt-1 uppercase italic">By Fikri Lelaki Ganteng</p>
-                </div>
-            </div>
-            <div id="currentDate" class="text-right text-xs font-bold text-slate-400"></div>
+    <!-- ======== TICKETING ======== -->
+    <div class="page" id="pg-ticketing">
+      <div class="grid-5">
+        <div class="card">
+          <div class="card-title">Buat Tiket Baru</div>
+          <div class="form-row"><label>Nama Pelapor</label><input type="text" id="tk-nama" placeholder="Nama lengkap..."></div>
+          <div class="form-row"><label>Unit</label><select id="tk-unit"><option>Radiologi</option><option>Perina</option><option>Gizi</option><option>LINEN</option><option>IGD</option><option>ICU</option><option>NICU</option><option>Farmasi</option><option>Laboratorium</option><option>ASOKA</option><option>VIP</option><option>VK</option><option>POLI</option><option>Pendaftaran</option><option>CASEMIX</option><option>CSSD</option><option>OK</option><option>RM</option><option>Kasir</option><option>Cleaning Service</option></select></div>
+          <div class="form-row"><label>Kategori</label><select id="tk-kat"><option>Hardware</option><option>Software / Aplikasi</option><option>Jaringan / Internet</option><option>SIMRS / Sistem</option><option>Printer / Scanner</option><option>Lainnya</option></select></div>
+          <div class="form-row"><label>Isi Kendala</label><textarea id="tk-isi" placeholder="Jelaskan masalah..."></textarea></div>
+          <div class="form-row"><label>Foto (opsional)</label><input type="file" id="tk-foto" accept="image/*"></div>
+          <button class="btn btn-blue" style="width:100%" onclick="submitTicket()">✓ Submit Tiket</button>
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
-            <div class="card border-blue-100">
-                <h2 class="text-xs font-black mb-4 flex items-center text-blue-700 uppercase tracking-widest">Import Scanlog</h2>
-                <input type="file" id="fileInput" accept=".html" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-blue-50 file:text-blue-700 cursor-pointer font-bold"/>
+        <div class="card">
+          <div class="card-title flex-row">Daftar Tiket
+            <div class="ml-auto flex-row">
+              <select style="padding:4px 8px;font-size:11px;width:auto" id="tk-fs" onchange="renderTickets()"><option value="">Semua Status</option><option>Baru</option><option>Proses</option><option>Selesai</option></select>
+              <select style="padding:4px 8px;font-size:11px;width:auto" id="tk-fu" onchange="renderTickets()"><option value="">Semua Unit</option><option>Radiologi</option><option>Perina</option><option>Gizi</option><option>LINEN</option><option>IGD</option><option>ICU</option><option>Farmasi</option></select>
             </div>
-            <div class="card border-orange-100">
-                <h2 class="text-xs font-black mb-4 flex items-center text-orange-700 uppercase tracking-widest">Daftar Karu (Sabtu 4j)</h2>
-                <div class="flex gap-2 mb-3">
-                    <select id="karuSelect" class="w-full"></select>
-                    <button id="btnAddKaru" class="bg-orange-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Tambah</button>
-                </div>
-                <div id="karuListDisplay" class="flex flex-wrap gap-2"></div>
-            </div>
+          </div>
+          <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Pelapor</th><th>Unit</th><th>Kategori</th><th>Status</th><th>Update</th></tr></thead><tbody id="tk-tbody"></tbody></table></div>
         </div>
-
-        <div id="mainDashboard" class="card hidden border-t-4 border-emerald-500">
-            <div class="flex justify-between items-start mb-6">
-                <h2 class="text-xs font-black text-emerald-700 uppercase tracking-widest">Detail Absensi Individu</h2>
-                <button id="btnExportIndividu" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Export Excel
-                </button>
-            </div>
-            
-            <div class="flex flex-col md:flex-row justify-between mb-8 gap-6">
-                <div class="w-full md:w-1/3 no-print">
-                    <select id="nameSelect" class="w-full"></select>
-                    <button id="btnClearDB" class="mt-4 text-[10px] text-red-400 font-bold uppercase hover:text-red-600">[ Reset Database ]</button>
-                </div>
-                <div class="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Unit Terakhir</p><p id="infoUnit" class="font-black text-xs text-slate-700">-</p></div>
-                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Aturan</p><p id="infoJamKerja" class="font-black text-xs text-blue-600">-</p></div>
-                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Total Hari</p><p id="totalHari" class="font-black text-xs text-slate-700">-</p></div>
-                    <div class="text-center"><p class="text-[9px] text-slate-400 uppercase font-bold">Status</p><p class="text-[9px] text-emerald-600 bg-emerald-100 rounded px-2 py-0.5 inline-block font-black">AKTIF</p></div>
-                </div>
-            </div>
-
-            <table class="w-full text-left text-sm mb-6" id="tableIndividu">
-                <thead class="bg-slate-800 text-white text-[10px] uppercase tracking-widest text-center">
-                    <tr>
-                        <th class="p-4 text-left">Hari, Tanggal</th>
-                        <th class="p-4">Unit</th>
-                        <th class="p-4">Masuk</th>
-                        <th class="p-4">Pulang</th>
-                        <th class="p-4 bg-red-900/40">Kurang</th>
-                        <th class="p-4 bg-emerald-900/40">Lembur</th>
-                    </tr>
-                </thead>
-                <tbody id="recapTableBody" class="divide-y divide-slate-100"></tbody>
-            </table>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-red-50 p-5 rounded-2xl border-2 border-red-100 text-center"><p id="totalKurangBox" class="font-black text-xl text-red-600">0m</p></div>
-                <div class="bg-emerald-50 p-5 rounded-2xl border-2 border-emerald-100 text-center"><p id="totalLemburBox" class="font-black text-xl text-emerald-600">0m</p></div>
-                <div class="bg-blue-600 p-5 rounded-2xl text-center"><p id="netLemburBox" class="font-black text-xl text-white">0m</p></div>
-            </div>
-        </div>
-
-        <div id="periodReport" class="card hidden border-t-4 border-indigo-600">
-             <div class="flex justify-between items-start mb-6">
-                <h2 class="text-xs font-black text-indigo-700 uppercase tracking-widest">Laporan Akumulasi Periode</h2>
-                <button id="btnExportAkumulasi" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Export Semua Data
-                </button>
-             </div>
-             
-             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 no-print">
-                <input type="date" id="startDate" class="p-3 rounded-xl border border-indigo-100 text-sm font-bold">
-                <input type="date" id="endDate" class="p-3 rounded-xl border border-indigo-100 text-sm font-bold">
-                <select id="unitFilterSelect" class="w-full"></select>
-                <button id="btnGenerateReport" class="bg-indigo-600 text-white font-black rounded-xl text-xs uppercase tracking-widest hover:bg-indigo-700 transition-colors">Generate Laporan</button>
-             </div>
-             
-             <div class="overflow-x-auto">
-                <table class="w-full text-[11px] border-collapse" id="tableAkumulasi">
-                    <thead class="bg-indigo-50 text-indigo-900 uppercase font-black text-center">
-                        <tr>
-                            <th class="p-4 text-left">Nama Karyawan</th>
-                            <th class="p-4 text-left">Unit</th>
-                            <th class="p-4">Hadir</th>
-                            <th class="p-4 text-red-600">Total Kurang</th>
-                            <th class="p-4 text-emerald-600">Total Lembur</th>
-                            <th class="p-4 bg-indigo-100 text-indigo-800">Net Lembur</th>
-                        </tr>
-                    </thead>
-                    <tbody id="periodTableBody" class="divide-y divide-slate-100 text-center font-bold">
-                        <tr><td colspan="6" class="p-10 text-slate-400 italic">Tarik Laporan Berdasarkan Periode</td></tr>
-                    </tbody>
-                </table>
-             </div>
-        </div>
+      </div>
     </div>
 
-    <script>
-        let masterDB = JSON.parse(localStorage.getItem('fikri_absensi_db')) || {};
-        let karuList = JSON.parse(localStorage.getItem('karuList')) || [];
+    <!-- ======== ABSENSI ======== -->
+    <div class="page" id="pg-absensi">
+      <div class="grid-2" style="margin-bottom:14px">
+        <div class="card">
+          <div class="card-title" style="color:#1d4ed8">Import Scanlog Absensi</div>
+          <input type="file" id="abs-file" accept=".html" onchange="importAbsensi(this)">
+          <p style="font-size:11px;color:var(--text3);margin-top:6px">File HTML dari mesin fingerprint (format scanlog)</p>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color:#d97706">Daftar Karu (Sabtu 4 Jam)</div>
+          <div class="flex-row" style="margin-bottom:8px">
+            <select id="karu-sel" style="flex:1"></select>
+            <button class="btn btn-sm" onclick="addKaru()">+ Tambah</button>
+          </div>
+          <div id="karu-list" style="display:flex;flex-wrap:wrap;gap:5px;min-height:24px"><span style="font-size:11px;color:var(--text3);font-style:italic">Belum ada Karu</span></div>
+        </div>
+      </div>
 
-        $(document).ready(function() {
-            $('#currentDate').text(new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }));
-            if (Object.keys(masterDB).length > 0) refreshUI();
-            renderKaruList();
-        });
+      <div id="abs-dashboard" style="display:none">
+        <div class="card">
+          <div class="card-title flex-row" style="color:#16a34a">Detail Absensi Individu
+            <button class="btn btn-sm btn-green ml-auto" onclick="exportIndividu()">Export Excel</button>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-start">
+            <div style="min-width:180px">
+              <label style="font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">Pilih Karyawan</label>
+              <select id="abs-name-sel" style="width:100%" onchange="showIndividu()">
+                <option value="">-- Pilih --</option>
+              </select>
+              <button onclick="clearAbsDB()" style="margin-top:6px;font-size:10px;color:var(--red);background:none;border:none;cursor:pointer;font-weight:600">[ Reset Database ]</button>
+            </div>
+            <div class="grid-4" style="flex:1;min-width:280px">
+              <div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center"><div style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px">Unit</div><div id="abs-unit" style="font-size:11px;font-weight:700">-</div></div>
+              <div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center"><div style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px">Aturan</div><div id="abs-aturan" style="font-size:11px;font-weight:700;color:var(--blue)">-</div></div>
+              <div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center"><div style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px">Total Hari</div><div id="abs-hari" style="font-size:11px;font-weight:700">-</div></div>
+              <div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center"><div style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px">Status</div><span class="badge badge-green" style="font-size:10px">AKTIF</span></div>
+            </div>
+          </div>
+          <div class="tbl-wrap" style="max-height:280px;overflow-y:auto">
+            <table id="tbl-individu"><thead><tr><th>Hari, Tanggal</th><th>Unit</th><th>Masuk</th><th>Pulang</th><th style="background:#fef2f2">Kurang</th><th style="background:#f0fdf4">Lembur</th></tr></thead><tbody id="abs-tbody"></tbody></table>
+          </div>
+          <div class="grid-3" style="margin-top:10px">
+            <div class="summary-box" style="background:#fef2f2"><div style="font-size:9px;font-weight:700;color:#dc2626;text-transform:uppercase;margin-bottom:2px">Total Kurang</div><div id="s-kurang" style="font-size:18px;font-weight:800;color:#dc2626">0m</div></div>
+            <div class="summary-box" style="background:#f0fdf4"><div style="font-size:9px;font-weight:700;color:#16a34a;text-transform:uppercase;margin-bottom:2px">Total Lembur</div><div id="s-lembur" style="font-size:18px;font-weight:800;color:#16a34a">0m</div></div>
+            <div class="summary-box" style="background:#1e40af"><div style="font-size:9px;font-weight:700;color:#93c5fd;text-transform:uppercase;margin-bottom:2px">Net Lembur</div><div id="s-net" style="font-size:18px;font-weight:800;color:#fff">0m</div></div>
+          </div>
+        </div>
 
-        function closeModal() { $('#unitModal').removeClass('active'); }
+        <div class="card">
+          <div class="card-title flex-row" style="color:#4f46e5">Laporan Akumulasi Periode
+            <button class="btn btn-sm btn-indigo ml-auto" onclick="exportAkumulasi()">Export Excel</button>
+          </div>
+          <div class="flex-row" style="margin-bottom:10px">
+            <input type="date" id="p-start" style="width:140px">
+            <input type="date" id="p-end" style="width:140px">
+            <select id="p-unit" style="width:140px"><option value="">Semua Unit</option></select>
+            <button class="btn btn-indigo btn-sm" onclick="generateReport()">Generate</button>
+          </div>
+          <div class="tbl-wrap">
+            <table id="tbl-akumulasi"><thead><tr><th>Nama</th><th>Unit</th><th>Hari Hadir</th><th style="color:#dc2626">Kurang</th><th style="color:#16a34a">Lembur</th><th style="color:#4f46e5">Net</th></tr></thead><tbody id="akum-tbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        window.showUnitHistory = function(nama, sDate, eDate) {
-            const u = masterDB[nama];
-            if(!u) return;
-            const dS = sDate ? new Date(sDate) : new Date('2000-01-01');
-            const dE = eDate ? new Date(eDate) : new Date('2099-12-31');
-            let history = [];
-            Object.keys(u.logs).sort((a,b) => new Date(a.split('-').reverse().join('-')) - new Date(b.split('-').reverse().join('-'))).forEach(t => {
-                const [dd, mm, yy] = t.split('-').map(Number);
-                const logDate = new Date(yy, mm-1, dd);
-                if (logDate >= dS && logDate <= dE) {
-                    history.push(`<div class="flex justify-between border-b py-2 italic"><span>${t}</span><span class="font-bold text-indigo-600">${u.logs[t].unit}</span></div>`);
-                }
-            });
-            $('#unitHistoryContent').html(history.join(''));
-            $('#unitModal').addClass('active');
-        };
+    <!-- ======== KARYAWAN ======== -->
+    <div class="page" id="pg-karyawan">
+      <div class="card">
+        <div class="card-title flex-row">Data Karyawan (210)
+          <div class="ml-auto flex-row">
+            <input type="text" id="kar-search" placeholder="Cari nama / NIP..." style="width:160px;padding:5px 9px;font-size:12px" oninput="renderKaryawan()">
+            <select id="kar-fu" style="width:130px;padding:5px 8px;font-size:12px" onchange="renderKaryawan()">
+              <option value="">Semua Unit</option>
+              <option>ASOKA</option><option>CASEMIX</option><option>CSSD</option><option>Cleaning Service</option>
+              <option>Dokter</option><option>Farmasi</option><option>Gizi</option><option>ICU</option><option>IGD</option>
+              <option>Kasir</option><option>LINEN</option><option>Laboratorium</option><option>Maintenance</option>
+              <option>NICU</option><option>OK</option><option>POLI</option><option>Pendaftaran</option>
+              <option>Perina</option><option>RM</option><option>Radiologi</option><option>Staff</option><option>VIP</option><option>VK</option>
+            </select>
+            <button class="btn btn-blue btn-sm" onclick="openKarModal()">+ Tambah</button>
+          </div>
+        </div>
+        <div class="tbl-wrap" style="max-height:420px;overflow-y:auto">
+          <table><thead><tr><th>Nama</th><th>NIP</th><th>Unit</th><th>Departemen</th><th>PIN</th><th>Aksi</th></tr></thead><tbody id="kar-tbody"></tbody></table>
+        </div>
+        <div class="pagination"><span id="kar-info"></span><div class="pag-btns" id="kar-pag"></div></div>
+      </div>
+    </div>
 
-        function clean(t) { return t.replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim(); }
+    <!-- ======== LOGISTIK ======== -->
+    <div class="page" id="pg-logistik">
+      <div class="grid-5">
+        <div class="card">
+          <div class="card-title">Input Transaksi</div>
+          <div class="form-row"><label>Jenis</label><select id="log-jenis" onchange="toggleLogOut()"><option value="in">Stok Masuk (In)</option><option value="out">Stok Keluar (Out)</option><option value="update">Update Stok</option></select></div>
+          <div class="form-row"><label>Nama Barang</label><input type="text" id="log-nama" placeholder="Nama barang ATK..."></div>
+          <div class="form-grid">
+            <div class="form-row"><label>Jumlah</label><input type="number" id="log-jml" min="1" placeholder="0"></div>
+            <div class="form-row"><label>Satuan</label><select id="log-sat"><option>rim</option><option>pcs</option><option>lusin</option><option>box</option><option>buah</option><option>pak</option><option>unit</option></select></div>
+          </div>
+          <div id="log-out-section" style="display:none">
+            <div class="form-row"><label>Pengambil</label><input type="text" id="log-pengambil" placeholder="Nama pengambil..."></div>
+            <div class="form-row"><label>Unit/Tujuan</label><input type="text" id="log-tujuan" placeholder="Unit tujuan..."></div>
+          </div>
+          <div class="form-row"><label>Tanggal</label><input type="date" id="log-tgl"></div>
+          <div class="form-row"><label>Keterangan</label><input type="text" id="log-ket" placeholder="Keterangan..."></div>
+          <button class="btn btn-blue" style="width:100%" onclick="simpanLogistik()">Simpan Transaksi</button>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title">Stok Saat Ini</div>
+            <div class="tbl-wrap"><table><thead><tr><th>Barang</th><th>Stok</th><th>Satuan</th><th>Status</th></tr></thead><tbody id="stok-tbody"></tbody></table></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Riwayat Transaksi</div>
+            <div class="tbl-wrap" style="max-height:200px;overflow-y:auto"><table><thead><tr><th>Tgl</th><th>Barang</th><th>Jenis</th><th>Jml</th><th>Ket.</th></tr></thead><tbody id="log-hist"></tbody></table></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        $('#fileInput').on('change', function(e) {
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                const doc = new DOMParser().parseFromString(ev.target.result, 'text/html');
-                doc.querySelectorAll('tr').forEach(row => {
-                    const cols = row.querySelectorAll('td');
-                    if (cols.length < 7) return;
-                    const tgl = clean(cols[1].innerText);
-                    const jam = clean(cols[2].innerText).substring(0, 5);
-                    const nama = clean(cols[5].innerText);
-                    const unit = clean(cols[6].innerText);
-                    if (!nama || nama === "Nama") return;
-                    if (!masterDB[nama]) masterDB[nama] = { logs: {} };
-                    if (!masterDB[nama].logs[tgl]) masterDB[nama].logs[tgl] = { unit: unit, times: [] };
-                    masterDB[nama].logs[tgl].unit = unit;
-                    if (!masterDB[nama].logs[tgl].times.includes(jam)) masterDB[nama].logs[tgl].times.push(jam);
-                });
-                localStorage.setItem('fikri_absensi_db', JSON.stringify(masterDB));
-                location.reload(); 
-            };
-            reader.readAsText(e.target.files[0]);
-        });
+    <!-- ======== CASMIX ======== -->
+    <div class="page" id="pg-casmix">
+      <div class="grid-5">
+        <div class="card">
+          <div class="card-title">Input Berkas Pasien</div>
+          <div class="form-row"><label>No. SEP</label><input type="text" id="sep-no" placeholder="SEP/I/001/2026"></div>
+          <div class="form-row"><label>Nama Pasien</label><input type="text" id="sep-pasien" placeholder="Nama pasien..."></div>
+          <div class="form-row"><label>Tanggal Kunjungan</label><input type="date" id="sep-tgl"></div>
+          <div class="form-row"><label>Jenis Berkas</label><select id="sep-jenis"><option>Resume Medis</option><option>Hasil Lab</option><option>Surat Rujukan</option><option>Klaim BPJS</option><option>Scan Dokumen</option><option>Lainnya</option></select></div>
+          <div class="form-row"><label>Upload File (PDF/Scan)</label><input type="file" id="sep-file" accept=".pdf,image/*"></div>
+          <div class="form-row"><label>Keterangan</label><input type="text" id="sep-ket" placeholder="Keterangan..."></div>
+          <div class="flex-row">
+            <button class="btn btn-blue" style="flex:1" onclick="simpanBerkas()">Simpan Berkas</button>
+            <button class="btn" onclick="toast('Fitur Scan→PDF: upload gambar untuk dikonversi','blue')">Scan→PDF</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title flex-row">Daftar Berkas
+            <input type="text" id="sep-cari" placeholder="Cari No. SEP..." style="margin-left:auto;width:160px;padding:5px 9px;font-size:12px" oninput="cariSEP()">
+          </div>
+          <div class="tbl-wrap"><table><thead><tr><th>No. SEP</th><th>Pasien</th><th>Tgl Kunjungan</th><th>Jenis</th><th>Ket.</th><th>Aksi</th></tr></thead><tbody id="berkas-tbody"></tbody></table></div>
+        </div>
+      </div>
+    </div>
 
-        function refreshUI() {
-            initDropdowns();
-            $('#mainDashboard, #periodReport').removeClass('hidden');
-        }
+  </div><!-- end content -->
+</div><!-- end main -->
+</div><!-- end app -->
 
-        function getUserConfig(nama, unit, tglStr) {
-            const u = (unit || "").toLowerCase();
-            let isSabtu = false;
-            if (tglStr) {
-                const p = tglStr.split('-');
-                const d = new Date(p[2], p[1]-1, p[0]);
-                isSabtu = d.getDay() === 6;
-            }
-            if (u.includes("cleaning service") || u.includes("kasir")) return { label: "12 Jam", mins: 720 };
-            if (karuList.includes(nama)) return isSabtu ? { label: "Karu (Sabtu 4j)", mins: 240 } : { label: "Karu (8j)", mins: 480 };
-            if (u.includes("perawat") || u.includes("rm") || u.includes("rekam medis")) return isSabtu ? { label: "Sabtu 4j", mins: 240 } : { label: "7 Jam", mins: 420 };
-            return isSabtu ? { label: "Sabtu 4j", mins: 240 } : { label: "8 Jam", mins: 480 };
-        }
+<!-- MODAL Karyawan -->
+<div class="modal-bg" id="kar-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="kar-modal-title">Tambah Karyawan</div>
+      <button class="modal-close" onclick="closeKarModal()">×</button>
+    </div>
+    <div class="form-row"><label>NIP</label><input type="text" id="m-nip" placeholder="Nomor Induk Pegawai..."></div>
+    <div class="form-row"><label>Nama Lengkap</label><input type="text" id="m-nama" placeholder="Nama + gelar..."></div>
+    <div class="form-grid">
+      <div class="form-row"><label>Unit</label><select id="m-unit"><option>Radiologi</option><option>Perina</option><option>Gizi</option><option>LINEN</option><option>IGD</option><option>ICU</option><option>NICU</option><option>Farmasi</option><option>Laboratorium</option><option>ASOKA</option><option>VIP</option><option>VK</option><option>POLI</option><option>Pendaftaran</option><option>CASEMIX</option><option>CSSD</option><option>OK</option><option>RM</option><option>Kasir</option><option>Cleaning Service</option><option>Staff</option><option>Dokter</option><option>Maintenance</option></select></div>
+      <div class="form-row"><label>Departemen</label><select id="m-dept"><option>Kabid Pelayanan</option><option>Kabag Umum</option><option>Keuangan</option><option>SDM</option><option>IT</option><option>-</option></select></div>
+    </div>
+    <div class="form-row"><label>PIN Absensi</label><input type="text" id="m-pin" placeholder="PIN mesin fingerprint..."></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeKarModal()">Batal</button>
+      <button class="btn btn-blue" onclick="saveKaryawan()">Simpan</button>
+    </div>
+  </div>
+</div>
 
-        function hitung(msk, plg, stdMins) {
-            if (!plg || plg === "-" || plg === msk) return { ks: "Blm Scan", ls: "0m", k: 0, l: 0 };
-            const toM = (s) => { const p = s.split(':'); return parseInt(p[0]) * 60 + parseInt(p[1]); };
-            let mIn = toM(msk), mOut = toM(plg);
-            if (mOut < mIn) mOut += 1440; 
-            let durasi = mOut - mIn;
-            let l = 0, k = 0;
-            if (durasi > stdMins) l = durasi - stdMins;
-            else if (durasi < stdMins) k = stdMins - durasi;
-            const fmt = (m) => { const j = Math.floor(m/60), mn = m%60; return j > 0 ? `${j}j ${mn}m` : `${mn}m`; };
-            return { ks: k > 0 ? fmt(k) : "0m", ls: l > 0 ? fmt(l) : "0m", k, l };
-        }
+<!-- MODAL Tiket Detail -->
+<div class="modal-bg" id="tk-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="tk-modal-title">Detail Tiket</div>
+      <button class="modal-close" onclick="document.getElementById('tk-modal').classList.remove('open')">×</button>
+    </div>
+    <div id="tk-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('tk-modal').classList.remove('open')">Tutup</button>
+    </div>
+  </div>
+</div>
 
-        function initDropdowns() {
-            const names = Object.keys(masterDB).sort();
-            const allUnits = [];
-            Object.values(masterDB).forEach(u => { Object.values(u.logs).forEach(l => allUnits.push(l.unit)); });
-            const units = [...new Set(allUnits)].sort();
-            const s1 = $('#nameSelect').empty().append('<option></option>');
-            const s2 = $('#karuSelect').empty().append('<option></option>');
-            const s3 = $('#unitFilterSelect').empty().append('<option value="">Semua Unit</option>');
-            names.forEach(n => { s1.append(`<option value="${n}">${n}</option>`); s2.append(`<option value="${n}">${n}</option>`); });
-            units.forEach(u => { if(u) s3.append(`<option value="${u}">${u}</option>`); });
-            s1.select2({ placeholder: "Pilih Karyawan...", width: '100%' });
-            s2.select2({ placeholder: "Pilih Nama Karu...", width: '100%' });
-            s3.select2({ placeholder: "Filter Unit...", width: '100%' });
-        }
+<div class="toast-area" id="toast-area"></div>
 
-        $('#nameSelect').on('change', function() {
-            const n = $(this).val();
-            const u = masterDB[n];
-            if(!u) return;
-            const dates = Object.keys(u.logs).sort((a,b) => new Date(a.split('-').reverse().join('-')) - new Date(b.split('-').reverse().join('-')));
-            const lastUnit = u.logs[dates[dates.length-1]].unit;
-            $('#infoUnit').html(`<button onclick="showUnitHistory('${n}')" class="group flex flex-col items-center justify-center w-full hover:scale-105 transition-transform"><span class="font-black text-xs text-indigo-700 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors">${lastUnit} ⓘ</span></button>`);
-            $('#totalHari').text(dates.length + " Hari");
-            const tbody = $('#recapTableBody').empty();
-            let sumK = 0, sumL = 0;
-            dates.forEach(t => {
-                const dayLog = u.logs[t];
-                const lgs = dayLog.times.sort();
-                const m = lgs[0], p = lgs.length > 1 ? lgs[lgs.length-1] : "-";
-                const cfg = getUserConfig(n, dayLog.unit, t);
-                const r = hitung(m, p, cfg.mins);
-                sumK += r.k; sumL += r.l;
-                const hari = new Date(t.split('-').reverse().join('-')).toLocaleDateString('id-ID', { weekday: 'long' });
-                tbody.append(`<tr class="text-center font-bold hover:bg-slate-50 transition-colors"><td class="p-4 text-left font-medium"><span class="${hari==='Sabtu'?'text-orange-600':'text-blue-600'}">${hari}</span>, ${t}</td><td class="p-4 text-[10px] text-slate-500 font-semibold uppercase">${dayLog.unit}</td><td class="p-4 font-mono text-emerald-600">${m}</td><td class="p-4 font-mono text-blue-600">${p}</td><td class="p-4 text-red-600 bg-red-50/40">${r.ks}</td><td class="p-4 text-emerald-700 bg-emerald-50/40">${r.ls}</td></tr>`);
-            });
-            const fmtF = (m) => { const a = Math.abs(m); return `${m<0?'-':''}${Math.floor(a/60)}j ${a%60}m`; };
-            $('#totalKurangBox').text("Kurang: " + fmtF(sumK));
-            $('#totalLemburBox').text("Lembur: " + fmtF(sumL));
-            $('#netLemburBox').text("Net: " + fmtF(sumL - sumK));
-            $('#infoJamKerja').text(getUserConfig(n, u.logs[dates[0]].unit, dates[0]).label);
-        });
+<script>
+// =========== STATE ===========
+let isAdmin = false;
+let karPage = 1;
+const KAR_PER_PAGE = 20;
+let editKarIdx = null;
 
-        $('#btnGenerateReport').on('click', function() {
-            const s = $('#startDate').val(), e = $('#endDate').val();
-            const filterUnit = $('#unitFilterSelect').val();
-            if (!s || !e) return alert("Pilih Tanggal!");
-            const dS = new Date(s), dE = new Date(e);
-            const tbody = $('#periodTableBody').empty();
-            Object.keys(masterDB).sort().forEach(nama => {
-                const u = masterDB[nama];
-                let unitsInPeriod = {}; 
-                Object.keys(u.logs).forEach(t => {
-                    const [dd, mm, yy] = t.split('-').map(Number);
-                    const logDate = new Date(yy, mm-1, dd);
-                    if (logDate >= dS && logDate <= dE) {
-                        const unitName = u.logs[t].unit;
-                        if (!unitsInPeriod[unitName]) unitsInPeriod[unitName] = { tk: 0, tl: 0, h: 0 };
-                        const lgs = u.logs[t].times.sort();
-                        const r = hitung(lgs[0], lgs.length > 1 ? lgs[lgs.length-1] : "-", getUserConfig(nama, unitName, t).mins);
-                        unitsInPeriod[unitName].h++;
-                        unitsInPeriod[unitName].tk += r.k;
-                        unitsInPeriod[unitName].tl += r.l;
-                    }
-                });
-                Object.keys(unitsInPeriod).forEach(unitName => {
-                    if (filterUnit && unitName !== filterUnit) return;
-                    const data = unitsInPeriod[unitName];
-                    const net = data.tl - data.tk;
-                    const f = (m) => { const a = Math.abs(m); return `${m < 0 ? '-' : ''}${Math.floor(a/60)}j ${a%60}m`; };
-                    tbody.append(`<tr class="uppercase hover:bg-slate-50 transition-colors">
-                        <td class="p-4 text-left">${nama}</td>
-                        <td class="p-4 text-left"><button onclick="showUnitHistory('${nama}', '${s}', '${e}')" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-[9px] font-bold shadow-sm">${unitName} ⓘ</button></td>
-                        <td class="p-4">${data.h} Hari</td>
-                        <td class="p-4 text-red-600">${f(data.tk)}</td>
-                        <td class="p-4 text-emerald-600">${f(data.tl)}</td>
-                        <td class="p-4 bg-indigo-50 ${net >= 0 ? 'text-indigo-700' : 'text-orange-600'}">${f(net)}</td>
-                    </tr>`);
-                });
-            });
-        });
+let tickets = [
+  {id:'TKT-001',nama:'Azmi Soniy',unit:'Radiologi',kat:'Printer / Scanner',isi:'Printer tidak bisa print',status:'Baru',tgl:'17/03/2026'},
+  {id:'TKT-002',nama:'Rini',unit:'LINEN',kat:'Hardware',isi:'Komputer lemot banget',status:'Proses',tgl:'16/03/2026'},
+  {id:'TKT-003',nama:'Afifah Intan',unit:'Perina',kat:'Jaringan / Internet',isi:'Jaringan putus sejak pagi',status:'Selesai',tgl:'15/03/2026'},
+  {id:'TKT-004',nama:'Dewi Danndy',unit:'Perina',kat:'SIMRS / Sistem',isi:'SIMRS tidak bisa login',status:'Baru',tgl:'15/03/2026'},
+  {id:'TKT-005',nama:'Ulfah Kusuma',unit:'Gizi',kat:'Hardware',isi:'Mouse rusak tidak bisa klik',status:'Proses',tgl:'14/03/2026'},
+];
 
-        // FUNGSI EXPORT EXCEL CORE
-        function exportToExcel(tableId, filename) {
-            const table = document.getElementById(tableId);
-            // Kloning tabel agar tidak merusak tampilan asli saat pembersihan teks
-            const clone = table.cloneNode(true);
-            
-            // Bersihkan simbol info (ⓘ) dan tombol dari output Excel
-            clone.querySelectorAll('button').forEach(btn => {
-                const text = btn.innerText.replace('ⓘ', '').trim();
-                btn.parentNode.innerText = text;
-                btn.remove();
-            });
+let stokDB = [
+  {nama:'Kertas A4',stok:50,satuan:'rim'},{nama:'Kertas F4',stok:20,satuan:'rim'},
+  {nama:'Tinta Printer',stok:2,satuan:'pcs'},{nama:'Ballpoint',stok:5,satuan:'lusin'},
+  {nama:'Staples',stok:1,satuan:'box'},{nama:'Map Plastik',stok:30,satuan:'pcs'},
+  {nama:'Spidol Whiteboard',stok:3,satuan:'pcs'},{nama:'Amplop',stok:10,satuan:'box'},
+];
+let logHist = [
+  {tgl:'10/03',nama:'Tinta Printer',jenis:'out',jml:1,satuan:'pcs',ket:'Rini/LINEN'},
+  {tgl:'05/03',nama:'Kertas A4',jenis:'in',jml:10,satuan:'rim',ket:'Restok'},
+  {tgl:'03/03',nama:'Staples',jenis:'out',jml:1,satuan:'box',ket:'Azmi/Radiologi'},
+];
+let berkasDB = [
+  {sep:'SEP/I/001/2026',pasien:'Budi Santoso',tgl:'15/03/2026',jenis:'Resume Medis',ket:'Lengkap'},
+  {sep:'SEP/I/002/2026',pasien:'Siti Rahayu',tgl:'12/03/2026',jenis:'Hasil Lab',ket:'Lab darah'},
+  {sep:'SEP/I/003/2026',pasien:'Ahmad Fauzi',tgl:'10/03/2026',jenis:'Surat Rujukan',ket:'Rujukan RSUD'},
+  {sep:'SEP/II/001/2026',pasien:'Dewi Lestari',tgl:'08/03/2026',jenis:'Klaim BPJS',ket:'Maret 2026'},
+];
+let masterDB = {};
+let karuList = [];
 
-            const wb = XLSX.utils.table_to_book(clone, { sheet: "Laporan" });
-            XLSX.writeFile(wb, filename + ".xlsx");
-        }
+const karyawanDB = [{"pin":"686","nip":"6861225","nama":"Abdul Dani","unit":"Cleaning Service","dept":""},{"pin":"18","nip":"18082022","nama":"Afifah Intan AiniAmdKeb","unit":"Perina","dept":"Kabid Pelayanan"},{"pin":"119","nip":"1190719","nama":"Agnes Elinda","unit":"VK","dept":"Kabid Pelayanan"},{"pin":"368","nip":"3680823","nama":"Agus Supriyatna","unit":"ICU","dept":""},{"pin":"504","nip":"5040624","nama":"Ai Ristiani","unit":"Farmasi","dept":""},{"pin":"243","nip":"2430820","nama":"Ajmaludin","unit":"Cleaning Service","dept":"Kabag Umum"},{"pin":"99","nip":"99102022","nama":"Alpin Rifky","unit":"IGD","dept":"Kabid Pelayanan"},{"pin":"272","nip":"2720319","nama":"Andi Apriyadi","unit":"Cleaning Service","dept":"Kabag Umum"},{"pin":"173","nip":"1730221","nama":"Anggun S. Bintang,S.Keb","unit":"NICU","dept":"Kabid Pelayanan"},{"pin":"68","nip":"68042021","nama":"Annisa Shafira Damayanti","unit":"Pendaftaran","dept":"Kabid Pelayanan"},{"pin":"706","nip":"7060126","nama":"Apriani","unit":"ASOKA","dept":""},{"pin":"436","nip":"4360224","nama":"Aprilia Putri S, Amd. Kes","unit":"Laboratorium","dept":""},{"pin":"517","nip":"5170824","nama":"Asih Putri","unit":"Cleaning Service","dept":""},{"pin":"61","nip":"61032019","nama":"Astri Widiawati","unit":"Laboratorium","dept":"Kabid Pelayanan"},{"pin":"705","nip":"7050126","nama":"Aulia","unit":"ASOKA","dept":""},{"pin":"551","nip":"5511024","nama":"Ayu Sholihatuzzahrah","unit":"Farmasi","dept":""},{"pin":"7","nip":"07042021","nama":"Azmi Soniy AmdRad","unit":"Radiologi","dept":"Kabid Pelayanan"},{"pin":"693","nip":"6391225","nama":"Baharia Nur Aini","unit":"Cleaning Service","dept":""},{"pin":"683","nip":"6831225","nama":"Bima","unit":"Cleaning Service","dept":""},{"pin":"652","nip":"6520925","nama":"Boy Parulian","unit":"OK","dept":""},{"pin":"158","nip":"1580622","nama":"Candra Putra","unit":"CSSD","dept":"Kabid Pelayanan"},{"pin":"680","nip":"6801025","nama":"Chaerunisa Nanda","unit":"VIP","dept":""},{"pin":"617","nip":"6170625","nama":"Cici Lestari","unit":"Cleaning Service","dept":""},{"pin":"710","nip":"7100126","nama":"Darmawan Saputra","unit":"Maintenance","dept":""},{"pin":"627","nip":"6270825","nama":"Dea Ananda","unit":"IGD","dept":""},{"pin":"284","nip":"2840323","nama":"Dede Hanusim","unit":"IGD","dept":"Kabid Pelayanan"},{"pin":"687","nip":"68712225","nama":"Dede Suhanda","unit":"Cleaning Service","dept":""},{"pin":"44","nip":"44102022","nama":"Della Rosa AmdKep","unit":"VIP","dept":"Kabid Pelayanan"},{"pin":"153","nip":"1531017","nama":"Desmeni Dian Sari","unit":"Farmasi","dept":"Kabid Pelayanan"},{"pin":"202","nip":"2020620","nama":"Destia Nurul Annisa","unit":"ASOKA","dept":"Kabid Pelayanan"},{"pin":"19","nip":"19072022","nama":"Dewi DanndyAmdKeb","unit":"Perina","dept":"Kabid Pelayanan"},{"pin":"205","nip":"2050920","nama":"Dewi Juwita Fazri","unit":"ASOKA","dept":"Kabid Pelayanan"},{"pin":"385","nip":"3851023","nama":"Dian Azzahra Suripto","unit":"CSSD","dept":""},{"pin":"62","nip":"62012018","nama":"Dicki Maulana","unit":"Pendaftaran","dept":"Kabid Pelayanan"},{"pin":"324","nip":"3240523","nama":"Didi Al FIkri","unit":"Radiologi","dept":"Kabid Pelayanan"},{"pin":"496","nip":"4960524","nama":"Dimah","unit":"POLI","dept":""},{"pin":"437","nip":"4370224","nama":"Dina Arianti","unit":"CASEMIX","dept":""},{"pin":"638","nip":"6380925","nama":"Dina Puspita Sari","unit":"Pendaftaran","dept":""},{"pin":"209","nip":"2090421","nama":"Dinda Dwi Lahikami","unit":"CSSD","dept":"Kabid Pelayanan"},{"pin":"394","nip":"3941023","nama":"Dinda Lestari","unit":"Radiologi","dept":""},{"pin":"469","nip":"4690424","nama":"Dinda Tasya Kamila","unit":"CASEMIX","dept":""},{"pin":"679","nip":"6791025","nama":"Dinda Triayu","unit":"VIP","dept":""},{"pin":"53","nip":"53102022","nama":"Dini AndrianiAmdKep","unit":"VIP","dept":"Kabid Pelayanan"},{"pin":"676","nip":"6761025","nama":"Dira","unit":"IGD","dept":""},{"pin":"229","nip":"2290219","nama":"Doni Nuryadi","unit":"CASEMIX","dept":"Kabid Pelayanan"},{"pin":"457","nip":"4570324","nama":"Dwi Wulan Septiani","unit":"ASOKA","dept":""},{"pin":"230","nip":"2300223","nama":"Dwi Yustika Hidayati","unit":"CASEMIX","dept":"Kabid Pelayanan"},{"pin":"641","nip":"6410925","nama":"Ella Juniarti","unit":"ASOKA","dept":""},{"pin":"21","nip":"21102022","nama":"Elsa Hani NuraeniAmdKeb","unit":"Perina","dept":"Kabid Pelayanan"},{"pin":"273","nip":"2730323","nama":"Elsya Safitri","unit":"VIP","dept":"Kabid Pelayanan"},{"pin":"41","nip":"41072018","nama":"ErniwatiAmdKep","unit":"NICU","dept":"Kabid Pelayanan"},{"pin":"42","nip":"42122021","nama":"Esih FadillahAmdKeb","unit":"VIP","dept":"Kabid Pelayanan"},{"pin":"671","nip":"6711025","nama":"Evan Dhika","unit":"Cleaning Service","dept":""},{"pin":"161","nip":"1611222","nama":"Faisal","unit":"OK","dept":"Kabid Pelayanan"},{"pin":"688","nip":"6881225","nama":"Fajarul Fatah","unit":"Pendaftaran","dept":""},{"pin":"691","nip":"6911225","nama":"Fajri Gustomi","unit":"Gizi","dept":""},{"pin":"606","nip":"6060625","nama":"Farid Fatan Firmansyah","unit":"Cleaning Service","dept":""},{"pin":"339","nip":"3390623","nama":"Farida","unit":"Kasir","dept":""},{"pin":"502","nip":"5020624","nama":"Farida N.","unit":"Radiologi","dept":""},{"pin":"702","nip":"7020126","nama":"Fashya Az Zahra","unit":"Perina","dept":""},{"pin":"167","nip":"1670521","nama":"Fatmawati","unit":"NICU","dept":"Kabid Pelayanan"},{"pin":"492","nip":"4920524","nama":"Fauziatul Jannah","unit":"POLI","dept":""},{"pin":"700","nip":"7000126","nama":"Fauzy","unit":"Staff","dept":""},{"pin":"45","nip":"45062022","nama":"Febria Nico Tanzil AmdKep","unit":"VIP","dept":"Kabid Pelayanan"},{"pin":"698","nip":"6980126","nama":"Fernandus Dapa Bulu","unit":"OK","dept":""},{"pin":"625","nip":"6250825","nama":"Fifi Afifah Diniyah","unit":"IGD","dept":""},{"pin":"694","nip":"6941225","nama":"Fikri Nurkholis","unit":"Staff","dept":""},{"pin":"125","nip":"1250820","nama":"Gina Levina Sari","unit":"RM","dept":"Kabid Pelayanan"},{"pin":"532","nip":"5320924","nama":"Gita Farera, S. Kep","unit":"ASOKA","dept":""},{"pin":"80","nip":"80062020","nama":"Gita Nur Sa'adah,Amd.Keb","unit":"POLI","dept":"Kabid Pelayanan"},{"pin":"63","nip":"63012021","nama":"Hairul Candra","unit":"OK","dept":"Kabid Pelayanan"},{"pin":"624","nip":"6240725","nama":"Hamidah Muyasarah","unit":"Farmasi","dept":""},{"pin":"179","nip":"1791921","nama":"Ibnu Mubarok","unit":"ICU","dept":"Kabid Pelayanan"},{"pin":"572","nip":"5720125","nama":"Ika Patimah","unit":"Cleaning Service","dept":""},{"pin":"113","nip":"1130518","nama":"Imas Ratnasari S","unit":"VK","dept":"Kabid Pelayanan"},{"pin":"633","nip":"6330825","nama":"Inaidah","unit":"POLI","dept":""},{"pin":"73","nip":"73092022","nama":"Indi Khoironi,S.AK","unit":"Pendaftaran","dept":"Kabid Pelayanan"},{"pin":"521","nip":"5210824","nama":"Intan Putri Iqlima, Amd. Kep","unit":"IGD","dept":""},{"pin":"409","nip":"4091223","nama":"Ipa S","unit":"OK","dept":""},{"pin":"525","nip":"5250924","nama":"Iradatul Muslimah","unit":"Perina","dept":""},{"pin":"475","nip":"4750524","nama":"Irawati, Amd. Keb","unit":"Perina","dept":""},{"pin":"699","nip":"6990126","nama":"Iryansyah","unit":"Staff","dept":""},{"pin":"644","nip":"6440925","nama":"Isma","unit":"IGD","dept":""},{"pin":"429","nip":"4290124","nama":"Ita Permatasari, Amd. Kep","unit":"IGD","dept":""},{"pin":"120","nip":"1200722","nama":"Iyus Novitasari","unit":"VK","dept":"Kabid Pelayanan"},{"pin":"160","nip":"1600621","nama":"Jayardi Sujatmiko","unit":"CSSD","dept":"Kabid Pelayanan"},{"pin":"105","nip":"1050419","nama":"Jepri Handoko","unit":"IGD","dept":"Kabid Pelayanan"},{"pin":"232","nip":"2320219","nama":"Joko Mulyono","unit":"CASEMIX","dept":"Kabid Pelayanan"},{"pin":"499","nip":"4990624","nama":"Lesta Noviasih","unit":"Laboratorium","dept":""},{"pin":"176","nip":"1760821","nama":"Lina Harlina","unit":"NICU","dept":"Kabid Pelayanan"},{"pin":"696","nip":"6960126","nama":"Lingga","unit":"OK","dept":""},{"pin":"708","nip":"7080126","nama":"Lisda Fauziah","unit":"Cleaning Service","dept":""},{"pin":"121","nip":"1210822","nama":"Lismawati Ayuning","unit":"VK","dept":"Kabid Pelayanan"},{"pin":"82","nip":"82032020","nama":"Livia Angelina","unit":"POLI","dept":"Kabid Pelayanan"},{"pin":"564","nip":"5640125","nama":"Liza Hanurani.AMd.keb","unit":"VIP","dept":""},{"pin":"367","nip":"3670823","nama":"Lulu Surtiyanah","unit":"ICU","dept":""},{"pin":"23","nip":"23012021","nama":"Luthfia SeptianiSGz","unit":"Gizi","dept":"Kabid Pelayanan"},{"pin":"493","nip":"4930524","nama":"Maharani Nur Kholipah","unit":"POLI","dept":""},{"pin":"206","nip":"2060123","nama":"Marcella","unit":"ASOKA","dept":"Kabid Pelayanan"},{"pin":"505","nip":"5050624","nama":"Megawati, Amd.Kes","unit":"Laboratorium","dept":""},{"pin":"361","nip":"3610823","nama":"Mia Listriana","unit":"Perina","dept":""},{"pin":"428","nip":"4280124","nama":"Mia Nurpadillah, Amd. Kep","unit":"IGD","dept":""},{"pin":"526","nip":"5260924","nama":"Mila Fatma M","unit":"ICU","dept":""},{"pin":"166","nip":"1660517","nama":"Misih","unit":"Gizi","dept":"Kabid Pelayanan"},{"pin":"656","nip":"6561025","nama":"Mista","unit":"ASOKA","dept":""},{"pin":"340","nip":"3400623","nama":"Muhammad 'Azin","unit":"IGD","dept":"Kabid Pelayanan"},{"pin":"399","nip":"3991123","nama":"Mulyanti","unit":"NICU","dept":""},{"pin":"497","nip":"4970624","nama":"Mumun Mulyani","unit":"NICU","dept":""},{"pin":"630","nip":"6300825","nama":"Nadila Trisya Ramadani M","unit":"RM","dept":""},{"pin":"709","nip":"7090126","nama":"Naira Nazwa Sopian","unit":"Cleaning Service","dept":""},{"pin":"529","nip":"5290924","nama":"Najla Salsabila, Amd. Kep","unit":"IGD","dept":""},{"pin":"252","nip":"2520422","nama":"Nani","unit":"Cleaning Service","dept":"Kabag Umum"},{"pin":"622","nip":"6220725","nama":"Natasya Miranda","unit":"ASOKA","dept":""},{"pin":"132","nip":"1321018","nama":"Neneu Suhendar","unit":"RM","dept":"Kabid Pelayanan"},{"pin":"588","nip":"5880225","nama":"Neni Nurhanifah","unit":"RM","dept":""},{"pin":"116","nip":"1161022","nama":"Niken Manunggal","unit":"VK","dept":"Kabid Pelayanan"},{"pin":"114","nip":"1140522","nama":"Noshi Widyanti","unit":"VK","dept":"Kabid Pelayanan"},{"pin":"56","nip":"56082021","nama":"Novi AtikahSKep","unit":"VIP","dept":"Kabid Pelayanan"},{"pin":"556","nip":"5561124","nama":"Novianti","unit":"ASOKA","dept":""},{"pin":"79","nip":"79092018","nama":"Ns.Adi Saputra,S.Kep","unit":"POLI","dept":"Kabid Pelayanan"},{"pin":"580","nip":"5800125","nama":"Nur Hasanah","unit":"IGD","dept":""},{"pin":"547","nip":"5471024","nama":"Nuramalia Ikhsanti","unit":"Farmasi","dept":""},{"pin":"655","nip":"6551025","nama":"Nuranisa Firdaus","unit":"ASOKA","dept":""},{"pin":"376","nip":"3760923","nama":"Nursintiya Padiylah Sardi","unit":"ASOKA","dept":""},{"pin":"506","nip":"5060624","nama":"Nurul Andarsari","unit":"Pendaftaran","dept":""},{"pin":"545","nip":"5450924","nama":"Nurul Azizah","unit":"Pendaftaran","dept":""},{"pin":"637","nip":"6370825","nama":"Nurul Fadilah,S.Kep","unit":"ASOKA","dept":""},{"pin":"356","nip":"3560823","nama":"Nurul Faturahmi","unit":"Gizi","dept":""},{"pin":"560","nip":"5601224","nama":"Nurul Laila","unit":"Farmasi","dept":""},{"pin":"172","nip":"1720123","nama":"Nurzanah","unit":"NICU","dept":"Kabid Pelayanan"},{"pin":"411","nip":"4111223","nama":"Paulus","unit":"OK","dept":""},{"pin":"527","nip":"5270924","nama":"Putri Arista, Amd. Kep","unit":"ICU","dept":""},{"pin":"697","nip":"6970126","nama":"Putri Intan","unit":"Staff","dept":""},{"pin":"234","nip":"2340223","nama":"Putri Reni Lestari","unit":"CASEMIX","dept":"Kabid Pelayanan"},{"pin":"448","nip":"4480324","nama":"Qatrunnada","unit":"Farmasi","dept":""},{"pin":"459","nip":"4590324","nama":"Rafi Nur","unit":"ASOKA","dept":""},{"pin":"518","nip":"5180824","nama":"Rantisa Olgakirana,Amd.kep","unit":"VIP","dept":""},{"pin":"70","nip":"70032017","nama":"Ratna sari dewi","unit":"Pendaftaran","dept":"Kabid Pelayanan"},{"pin":"417","nip":"4171223","nama":"Rena Nurul Aropah,Amd.Kep","unit":"ASOKA","dept":""},{"pin":"511","nip":"5110724","nama":"Reza Sepina A","unit":"Cleaning Service","dept":""},{"pin":"487","nip":"4870524","nama":"Riana Rifdah A","unit":"IGD","dept":""},{"pin":"286","nip":"2860323","nama":"Rika","unit":"ASOKA","dept":"Kabid Pelayanan"},{"pin":"468","nip":"4680424","nama":"Rika Puspita","unit":"ASOKA","dept":""},{"pin":"208","nip":"2080119","nama":"Rina May Kusumawati","unit":"ASOKA","dept":"Kabid Pelayanan"},{"pin":"10","nip":"10072013","nama":"Rini","unit":"LINEN","dept":"Kabag Umum"},{"pin":"151","nip":"1511022","nama":"Riska Hakim","unit":"Farmasi","dept":"Kabid Pelayanan"},{"pin":"685","nip":"6851225","nama":"Rizki Aditiya","unit":"Cleaning Service","dept":""},{"pin":"238","nip":"2381119","nama":"Robi Ahlan","unit":"Cleaning Service","dept":"Kabag Umum"},{"pin":"515","nip":"5150824","nama":"Rohmah Puji R","unit":"Pendaftaran","dept":""},{"pin":"257","nip":"2570922","nama":"Sabar","unit":"Cleaning Service","dept":"Kabag Umum"},{"pin":"288","nip":"2880423","nama":"Sagita Wulandari","unit":"Farmasi","dept":"Kabid Pelayanan"},{"pin":"106","nip":"1061022","nama":"Sakhrolis","unit":"IGD","dept":"Kabid Pelayanan"},{"pin":"621","nip":"6210725","nama":"Salvy Haris","unit":"ASOKA","dept":""},{"pin":"590","nip":"5900425","nama":"Salwa Hypatia","unit":"Pendaftaran","dept":""},{"pin":"653","nip":"6531025","nama":"Samsiah Nurhasanah","unit":"ASOKA","dept":""},{"pin":"175","nip":"1750821","nama":"Satriani Peni Panok","unit":"NICU","dept":"Kabid Pelayanan"},{"pin":"555","nip":"5551124","nama":"Seftiara Farida","unit":"VK","dept":""},{"pin":"466","nip":"4660424","nama":"Septa Aji Prayoga","unit":"IGD","dept":""},{"pin":"89","nip":"89122020","nama":"Serly,Amd.AK","unit":"Laboratorium","dept":"Kabid Pelayanan"},{"pin":"634","nip":"6340825","nama":"Setyorini,Amd.Keb","unit":"ASOKA","dept":""},{"pin":"614","nip":"6140625","nama":"Seventeena Augustin","unit":"Pendaftaran","dept":""},{"pin":"569","nip":"5690125","nama":"Shaumi Nurahma Fadilah","unit":"RM","dept":""},{"pin":"141","nip":"1410722","nama":"Shophie Tri Hadianti","unit":"Farmasi","dept":"Kabid Pelayanan"},{"pin":"631","nip":"6310825","nama":"Silvi dwi Yunita","unit":"Farmasi","dept":""},{"pin":"225","nip":"225","nama":"Siti Aida","unit":"ICU","dept":"Kabid Pelayanan"},{"pin":"142","nip":"1420522","nama":"Siti Khoerunisa","unit":"Farmasi","dept":"Kabid Pelayanan"},{"pin":"412","nip":"4121223","nama":"Siti Khopipah Yanuar","unit":"ASOKA","dept":""},{"pin":"165","nip":"1650817","nama":"Siti Masitoh","unit":"Gizi","dept":"Kabid Pelayanan"},{"pin":"507","nip":"5070624","nama":"Siti Nur Hapipah","unit":"Kasir","dept":""},{"pin":"49","nip":"49082021","nama":"Siti Nurlaela SariAmdKeb","unit":"VIP","dept":"Kabid Pelayanan"},{"pin":"602","nip":"6020525","nama":"Siti Nurlailatul Fadilah","unit":"Pendaftaran","dept":""},{"pin":"59","nip":"59072019","nama":"Siti Rohmah","unit":"VK","dept":"Kabid Pelayanan"},{"pin":"494","nip":"4940524","nama":"Siti Salma Salsabila","unit":"Farmasi","dept":""},{"pin":"578","nip":"5780125","nama":"Siti Zahra","unit":"VIP","dept":""},{"pin":"185","nip":"1850121","nama":"Sri Rahayu","unit":"ICU","dept":"Kabid Pelayanan"},{"pin":"565","nip":"5650125","nama":"Sri Rahayu,amd.keb","unit":"VK","dept":""},{"pin":"579","nip":"5790125","nama":"Sri Umiyati","unit":"POLI","dept":""},{"pin":"123","nip":"1231020","nama":"Susi Susanti","unit":"VK","dept":"Kabid Pelayanan"},{"pin":"600","nip":"6000425","nama":"Suyamti","unit":"Gizi","dept":""},{"pin":"37","nip":"37102021","nama":"SyafinatunajahSKepNs","unit":"NICU","dept":"Kabid Pelayanan"},{"pin":"519","nip":"5190824","nama":"Titi Komala,Amd.Keb","unit":"VIP","dept":""},{"pin":"695","nip":"6951225","nama":"Tiyo Rizky Prasetyo","unit":"Staff","dept":""},{"pin":"22","nip":"22122018","nama":"Ulfah Kusuma WardhaniSGz","unit":"Gizi","dept":"Kabid Pelayanan"},{"pin":"692","nip":"6921225","nama":"Uswatun Hasanah","unit":"Cleaning Service","dept":""},{"pin":"581","nip":"5810125","nama":"Vidliya","unit":"Kasir","dept":""},{"pin":"603","nip":"6030525","nama":"Wafa Alia Muchtar","unit":"Pendaftaran","dept":""},{"pin":"131","nip":"1310123","nama":"Wihardiningsih","unit":"RM","dept":"Kabid Pelayanan"},{"pin":"682","nip":"6821225","nama":"Wijaya","unit":"Cleaning Service","dept":""},{"pin":"354","nip":"3540823","nama":"Wikhda Amalia","unit":"LINEN","dept":""},{"pin":"651","nip":"6510925","nama":"Winda Damayanti","unit":"Farmasi","dept":""},{"pin":"480","nip":"4800524","nama":"Windi","unit":"Gizi","dept":""},{"pin":"189","nip":"1890221","nama":"Yanti Komalasari","unit":"ICU","dept":"Kabid Pelayanan"},{"pin":"90","nip":"90112022","nama":"Yayu Wanda,Amd.AK","unit":"Laboratorium","dept":"Kabid Pelayanan"},{"pin":"305","nip":"3050523","nama":"Yoba Agung O","unit":"Staff","dept":"IT"},{"pin":"677","nip":"6771025","nama":"Yoga Pratama","unit":"IGD","dept":""},{"pin":"703","nip":"7030126","nama":"Yuli","unit":"IGD","dept":""},{"pin":"66","nip":"66042019","nama":"Yuni","unit":"ASOKA","dept":"Kabid Pelayanan"},{"pin":"479","nip":"4790524","nama":"Yunia Silviani, Amd. Kes","unit":"Laboratorium","dept":""},{"pin":"620","nip":"6200725","nama":"Yupitasari Hendiawati","unit":"RM","dept":""},{"pin":"352","nip":"3520823","nama":"Yuyu Windiarti","unit":"VK","dept":""},{"pin":"589","nip":"5890225","nama":"Zaenal Mutaqin","unit":"Radiologi","dept":""},{"pin":"312","nip":"3120520","nama":"Zahra","unit":"Gizi","dept":"Kabid Pelayanan"},{"pin":"678","nip":"6781025","nama":"Zifa Kholisah","unit":"ICU","dept":""},{"pin":"659","nip":"6591025","nama":"abdul musa","unit":"Cleaning Service","dept":""},{"pin":"675","nip":"6751025","nama":"andri","unit":"Cleaning Service","dept":""},{"pin":"646","nip":"6460925","nama":"dr.eko","unit":"Dokter","dept":""},{"pin":"618","nip":"6180625","nama":"erna","unit":"Cleaning Service","dept":""},{"pin":"672","nip":"6721025","nama":"fangki hermawan","unit":"Cleaning Service","dept":""},{"pin":"223","nip":"2230322","nama":"krensesia mellyana","unit":"ASOKA","dept":"Kabid Pelayanan"}];
 
-        $('#btnExportIndividu').on('click', function() {
-            const name = $('#nameSelect').val();
-            if(!name) return alert("Pilih karyawan dulu!");
-            exportToExcel('tableIndividu', `Rekap_Absensi_${name.replace(/ /g, '_')}`);
-        });
+// =========== HELPERS ===========
+function toast(msg, type='green'){
+  const area = document.getElementById('toast-area');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  area.appendChild(el);
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>el.classList.add('show')); });
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),350); }, 2800);
+}
 
-        $('#btnExportAkumulasi').on('click', function() {
-            if($('#periodTableBody tr').length < 2 && $('#periodTableBody tr td').attr('colspan')) {
-                return alert("Generate laporan dulu!");
-            }
-            exportToExcel('tableAkumulasi', `Laporan_Akumulasi_Periode`);
-        });
+function fmt(m){ const a=Math.abs(m),j=Math.floor(a/60),mn=a%60; return (m<0?'-':'')+(j>0?j+'j ':'')+mn+'m'; }
 
-        $('#btnAddKaru').on('click', function() {
-            const n = $('#karuSelect').val();
-            if (n && !karuList.includes(n)) { karuList.push(n); localStorage.setItem('karuList', JSON.stringify(karuList)); renderKaruList(); }
-        });
-        function renderKaruList() {
-            const c = $('#karuListDisplay').empty();
-            karuList.forEach((n, i) => { c.append(`<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-xl text-[10px] border border-orange-200 flex items-center">${n} <button onclick="removeKaru(${i})" class="ml-2 font-bold hover:text-red-600">×</button></span>`); });
-        }
-        window.removeKaru = (i) => { karuList.splice(i, 1); localStorage.setItem('karuList', JSON.stringify(karuList)); renderKaruList(); };
-        $('#btnClearDB').on('click', function() { if(confirm("Hapus semua data?")) { localStorage.removeItem('fikri_absensi_db'); location.reload(); } });
-    </script>
-</body>
-</html>
+function unitColor(unit){
+  const map={'Perina':'#eff6ff:#1e40af','IGD':'#fef2f2:#991b1b','ICU':'#fdf4ff:#7e22ce','NICU':'#f0fdf4:#166534','Radiologi':'#fff7ed:#9a3412','Gizi':'#f0fdf4:#15803d','Farmasi':'#fefce8:#854d0e','Laboratorium':'#f0f9ff:#075985','VK':'#fdf2f8:#9d174d','LINEN':'#f8fafc:#334155','Cleaning Service':'#f1f5f9:#475569','OK':'#fff1f2:#be123c','CSSD':'#fffbeb:#92400e','POLI':'#ecfdf5:#065f46','ASOKA':'#faf5ff:#6b21a8','VIP':'#eff6ff:#1e3a8a','Pendaftaran':'#f0fdfa:#134e4a','CASEMIX':'#fef9c3:#713f12','RM':'#f9fafb:#1e293b','Staff':'#f8fafc:#475569','Kasir':'#fff7ed:#9a3412','Maintenance':'#f1f5f9:#334155','Dokter':'#fff1f2:#9f1239'};
+  const v=map[unit]||'#f1f5f9:#374151'; const [bg,c]=v.split(':');
+  return `background:${bg};color:${c}`;
+}
+
+function initials(n){ return n.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase(); }
+function avatarStyle(n){ const c=['#dbeafe:#1e40af','#dcfce7:#166534','#fce7f3:#9d174d','#fef9c3:#854d0e','#ede9fe:#5b21b6','#ffedd5:#9a3412']; const s=c[n.charCodeAt(0)%c.length].split(':'); return `background:${s[0]};color:${s[1]}`; }
+
+// =========== NAV ===========
+const titles = {dashboard:'Dashboard',ticketing:'Ticketing IT',absensi:'Absensi Karyawan',karyawan:'Manajemen Karyawan',logistik:'Logistik & ATK',casmix:'Berkas Pasien & Casmix'};
+
+function nav(btn){
+  const pg = btn.getAttribute('data-page');
+  if(['karyawan','logistik','casmix'].includes(pg) && !isAdmin){
+    toast('Login admin dulu untuk mengakses menu ini!','red'); return;
+  }
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+pg).classList.add('active');
+  document.getElementById('page-title').textContent = titles[pg]||'';
+  if(pg==='karyawan') renderKaryawan();
+  if(pg==='dashboard') updateDashboard();
+}
+
+// =========== ADMIN ===========
+function toggleAdmin(){
+  isAdmin = !isAdmin;
+  document.getElementById('admin-label').textContent = isAdmin ? 'Logout Admin' : 'Login Admin';
+  document.getElementById('mode-badge').textContent = isAdmin ? 'Admin' : 'Guest';
+  document.getElementById('mode-badge').className = isAdmin ? 'badge badge-blue' : 'badge badge-gray';
+  document.querySelectorAll('.admin-menu').forEach(el=>{
+    el.style.opacity = isAdmin ? '1' : '0.4';
+  });
+  toast(isAdmin ? '✓ Login Admin berhasil' : 'Logout berhasil', isAdmin?'green':'blue');
+}
+
+function toggleDark(){
+  toast('Dark mode tersedia di file HTML yang didownload','blue');
+}
+
+// =========== DASHBOARD ===========
+function updateDashboard(){
+  const baru = tickets.filter(t=>t.status==='Baru').length;
+  const proses = tickets.filter(t=>t.status==='Proses').length;
+  const done = tickets.filter(t=>t.status==='Selesai').length;
+  document.getElementById('d-tiket-baru').textContent = baru;
+  document.getElementById('d-tiket-proses').textContent = proses;
+  document.getElementById('d-tiket-done').textContent = done;
+  document.getElementById('d-kar').textContent = karyawanDB.length;
+
+  const cls={Baru:'badge-red',Proses:'badge-amber',Selesai:'badge-green'};
+  document.getElementById('d-tiket-tbody').innerHTML = tickets.slice(0,5).map(t=>`
+    <tr><td><b>${t.id}</b></td><td>${t.unit}</td><td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.isi}</td>
+    <td><span class="badge ${cls[t.status]}">${t.status}</span></td></tr>`).join('');
+
+  const kritis = stokDB.filter(s=>s.stok<=3);
+  document.getElementById('d-stok-list').innerHTML = stokDB.slice(0,6).map(s=>{
+    const krit=s.stok<=3;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #f1f5f9;font-size:12px">
+      <span>${s.nama}</span>
+      <span class="badge ${krit?'badge-red':'badge-green'}">${s.stok} ${s.satuan}</span></div>`;
+  }).join('');
+
+  const hasAbs = Object.keys(masterDB).length>0;
+  document.getElementById('d-abs-info').innerHTML = hasAbs
+    ? `<span style="color:#22c55e;font-weight:700">✓ ${Object.keys(masterDB).length} karyawan terloading</span><br><span style="font-size:11px">Buka menu Absensi untuk rekap detail</span>`
+    : `<span style="color:#64748b">Import file absensi HTML dari mesin fingerprint</span>`;
+}
+
+// =========== TICKETS ===========
+function renderTickets(){
+  const fs = document.getElementById('tk-fs').value;
+  const fu = document.getElementById('tk-fu').value;
+  let data = tickets;
+  if(fs) data = data.filter(t=>t.status===fs);
+  if(fu) data = data.filter(t=>t.unit===fu);
+  const cls={Baru:'badge-red',Proses:'badge-amber',Selesai:'badge-green'};
+  document.getElementById('tk-tbody').innerHTML = data.map(t=>`
+    <tr>
+      <td><b style="font-family:monospace">${t.id}</b></td>
+      <td>${t.nama}</td><td>${t.unit}</td>
+      <td style="font-size:11px;color:#64748b">${t.kat}</td>
+      <td><span class="badge ${cls[t.status]}">${t.status}</span></td>
+      <td>
+        <select style="padding:3px 6px;font-size:11px;border:1px solid #e2e8f0;border-radius:5px;width:80px" onchange="updateTiket('${t.id}',this.value)">
+          <option ${t.status==='Baru'?'selected':''}>Baru</option>
+          <option ${t.status==='Proses'?'selected':''}>Proses</option>
+          <option ${t.status==='Selesai'?'selected':''}>Selesai</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function submitTicket(){
+  const nama=document.getElementById('tk-nama').value.trim();
+  const isi=document.getElementById('tk-isi').value.trim();
+  if(!nama||!isi){toast('Lengkapi nama dan isi kendala!','red');return;}
+  const id='TKT-'+String(tickets.length+1).padStart(3,'0');
+  tickets.unshift({id,nama,unit:document.getElementById('tk-unit').value,kat:document.getElementById('tk-kat').value,isi,status:'Baru',tgl:new Date().toLocaleDateString('id-ID')});
+  document.getElementById('tk-nama').value='';
+  document.getElementById('tk-isi').value='';
+  renderTickets(); updateDashboard();
+  toast('✓ Tiket '+id+' berhasil dibuat!');
+}
+
+function updateTiket(id,status){
+  const t=tickets.find(x=>x.id===id);
+  if(t){t.status=status;renderTickets();updateDashboard();toast('Status '+id+' → '+status);}
+}
+
+// =========== KARYAWAN ===========
+function renderKaryawan(){
+  const q=(document.getElementById('kar-search').value||'').toLowerCase();
+  const fu=document.getElementById('kar-fu').value;
+  let data=karyawanDB.filter(k=>{
+    const mq=!q||k.nama.toLowerCase().includes(q)||k.nip.toLowerCase().includes(q);
+    const mu=!fu||k.unit===fu;
+    return mq&&mu;
+  });
+  const total=data.length, start=(karPage-1)*KAR_PER_PAGE, slice=data.slice(start,start+KAR_PER_PAGE);
+  document.getElementById('kar-tbody').innerHTML = slice.map((k,ri)=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="avatar" style="${avatarStyle(k.nama)}">${initials(k.nama)}</div>
+        <span style="font-weight:600">${k.nama}</span>
+      </div></td>
+      <td style="font-family:monospace;font-size:11px;color:#64748b">${k.nip}</td>
+      <td><span class="unit-pill" style="${unitColor(k.unit)}">${k.unit}</span></td>
+      <td style="font-size:11px;color:#64748b">${k.dept||'—'}</td>
+      <td style="font-family:monospace;font-weight:700;text-align:center">${k.pin}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-xs" onclick="editKar(${karyawanDB.indexOf(k)})">Edit</button>
+        <button class="btn btn-xs btn-red" onclick="hapusKar(${karyawanDB.indexOf(k)})">Hapus</button>
+      </div></td>
+    </tr>`).join('');
+  const pages=Math.ceil(total/KAR_PER_PAGE);
+  document.getElementById('kar-info').textContent=`${start+1}–${Math.min(start+KAR_PER_PAGE,total)} dari ${total}`;
+  let pb=''; if(karPage>1)pb+=`<button class="pag-btn" onclick="karGo(${karPage-1})">‹</button>`;
+  for(let p=Math.max(1,karPage-2);p<=Math.min(pages,karPage+2);p++)
+    pb+=`<button class="pag-btn${p===karPage?' active':''}" onclick="karGo(${p})">${p}</button>`;
+  if(karPage<pages)pb+=`<button class="pag-btn" onclick="karGo(${karPage+1})">›</button>`;
+  document.getElementById('kar-pag').innerHTML=pb;
+}
+function karGo(p){karPage=p;renderKaryawan();}
+
+function openKarModal(idx=null){
+  editKarIdx=idx;
+  document.getElementById('kar-modal-title').textContent=idx===null?'Tambah Karyawan':'Edit Karyawan';
+  if(idx!==null){const k=karyawanDB[idx];document.getElementById('m-nip').value=k.nip;document.getElementById('m-nama').value=k.nama;document.getElementById('m-unit').value=k.unit;document.getElementById('m-dept').value=k.dept||'-';document.getElementById('m-pin').value=k.pin;}
+  else{['m-nip','m-nama','m-pin'].forEach(id=>document.getElementById(id).value='');}
+  document.getElementById('kar-modal').classList.add('open');
+}
+function closeKarModal(){document.getElementById('kar-modal').classList.remove('open');editKarIdx=null;}
+function editKar(i){openKarModal(i);}
+function hapusKar(i){if(!confirm('Hapus '+karyawanDB[i].nama+'?'))return;karyawanDB.splice(i,1);renderKaryawan();toast('Karyawan dihapus','blue');}
+function saveKaryawan(){
+  const nip=document.getElementById('m-nip').value.trim(),nama=document.getElementById('m-nama').value.trim();
+  if(!nip||!nama){toast('Lengkapi NIP dan Nama!','red');return;}
+  const obj={nip,nama,unit:document.getElementById('m-unit').value,dept:document.getElementById('m-dept').value,pin:document.getElementById('m-pin').value.trim()};
+  if(editKarIdx!==null){karyawanDB[editKarIdx]=obj;toast('✓ Data diperbarui');}
+  else{karyawanDB.push(obj);toast('✓ Karyawan ditambahkan');}
+  closeKarModal();renderKaryawan();
+}
+
+// =========== LOGISTIK ===========
+function toggleLogOut(){
+  const v=document.getElementById('log-jenis').value;
+  document.getElementById('log-out-section').style.display=v==='out'?'block':'none';
+}
+function renderStok(){
+  document.getElementById('stok-tbody').innerHTML=stokDB.map(s=>`
+    <tr><td style="font-weight:600">${s.nama}</td>
+    <td style="font-family:monospace;font-weight:700;color:${s.stok<=3?'#dc2626':'#16a34a'}">${s.stok}</td>
+    <td style="color:#64748b;font-size:11px">${s.satuan}</td>
+    <td><span class="badge ${s.stok<=3?'badge-red':'badge-green'}">${s.stok<=3?'Kritis':'Normal'}</span></td></tr>`).join('');
+}
+function renderLogHist(){
+  document.getElementById('log-hist').innerHTML=logHist.slice(0,20).map(l=>`
+    <tr><td style="font-family:monospace;font-size:10px">${l.tgl}</td><td style="font-weight:600">${l.nama}</td>
+    <td><span class="badge ${l.jenis==='in'?'badge-blue':'badge-gray'}">${l.jenis==='in'?'In':l.jenis==='out'?'Out':'Upd'}</span></td>
+    <td style="font-family:monospace">${l.jml} ${l.satuan}</td>
+    <td style="font-size:11px;color:#64748b">${l.ket}</td></tr>`).join('');
+}
+function simpanLogistik(){
+  const nama=document.getElementById('log-nama').value.trim(),jml=parseInt(document.getElementById('log-jml').value);
+  if(!nama||!jml){toast('Isi nama barang dan jumlah!','red');return;}
+  const jenis=document.getElementById('log-jenis').value,satuan=document.getElementById('log-sat').value;
+  const pengambil=document.getElementById('log-pengambil').value.trim(),tujuan=document.getElementById('log-tujuan').value.trim(),ket=document.getElementById('log-ket').value.trim();
+  const existing=stokDB.find(s=>s.nama.toLowerCase()===nama.toLowerCase());
+  if(jenis==='in'){if(existing)existing.stok+=jml;else stokDB.push({nama,stok:jml,satuan});}
+  else if(jenis==='out'){if(existing)existing.stok=Math.max(0,existing.stok-jml);}
+  else if(jenis==='update'){if(existing)existing.stok=jml;else stokDB.push({nama,stok:jml,satuan});}
+  logHist.unshift({tgl:new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit'}),nama,jenis,jml,satuan,ket:jenis==='out'?[pengambil,tujuan].filter(Boolean).join('/'):(ket||'-')});
+  renderStok();renderLogHist();updateDashboard();
+  ['log-nama','log-jml','log-ket','log-pengambil','log-tujuan'].forEach(id=>document.getElementById(id).value='');
+  toast('✓ Transaksi logistik disimpan!');
+}
+
+// =========== BERKAS ===========
+function renderBerkas(data){
+  const list=data||berkasDB;
+  document.getElementById('berkas-tbody').innerHTML=list.map(b=>`
+    <tr><td style="font-family:monospace;font-size:11px;font-weight:700">${b.sep}</td>
+    <td>${b.pasien}</td><td style="font-family:monospace;font-size:11px">${b.tgl}</td>
+    <td><span class="badge badge-blue">${b.jenis}</span></td>
+    <td style="font-size:11px;color:#64748b">${b.ket}</td>
+    <td><button class="btn btn-xs" onclick="toast('Membuka berkas ${b.sep}','blue')">Lihat</button></td></tr>`).join('');
+}
+function simpanBerkas(){
+  const sep=document.getElementById('sep-no').value.trim();
+  if(!sep){toast('Masukkan No. SEP!','red');return;}
+  const pasien=document.getElementById('sep-pasien').value.trim()||'-';
+  const tglRaw=document.getElementById('sep-tgl').value;
+  const tgl=tglRaw?new Date(tglRaw).toLocaleDateString('id-ID'):'-';
+  berkasDB.unshift({sep,pasien,tgl,jenis:document.getElementById('sep-jenis').value,ket:document.getElementById('sep-ket').value.trim()||'-'});
+  renderBerkas();
+  ['sep-no','sep-pasien','sep-ket'].forEach(id=>document.getElementById(id).value='');
+  toast('✓ Berkas '+sep+' tersimpan!');
+}
+function cariSEP(){
+  const q=document.getElementById('sep-cari').value.toLowerCase();
+  renderBerkas(q?berkasDB.filter(b=>b.sep.toLowerCase().includes(q)||b.pasien.toLowerCase().includes(q)):berkasDB);
+}
+
+// =========== ABSENSI ===========
+function importAbsensi(input){
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const doc=new DOMParser().parseFromString(ev.target.result,'text/html');
+    let count=0;
+    doc.querySelectorAll('tr').forEach(row=>{
+      const cols=row.querySelectorAll('td');
+      if(cols.length<7)return;
+      const clean=t=>t.innerText.replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+      const tgl=clean(cols[1]),jam=clean(cols[2]).substring(0,5),nama=clean(cols[5]),unit=clean(cols[6]);
+      if(!nama||nama==='Nama')return;
+      if(!masterDB[nama])masterDB[nama]={logs:{}};
+      if(!masterDB[nama].logs[tgl])masterDB[nama].logs[tgl]={unit,times:[]};
+      masterDB[nama].logs[tgl].unit=unit;
+      if(!masterDB[nama].logs[tgl].times.includes(jam))masterDB[nama].logs[tgl].times.push(jam);
+      count++;
+    });
+    const names=Object.keys(masterDB).sort();
+    const sel=document.getElementById('abs-name-sel');
+    sel.innerHTML='<option value="">-- Pilih --</option>'+names.map(n=>`<option value="${n}">${n}</option>`).join('');
+    const allUnits=[...new Set(Object.values(masterDB).flatMap(u=>Object.values(u.logs).map(l=>l.unit)))].sort();
+    document.getElementById('p-unit').innerHTML='<option value="">Semua Unit</option>'+allUnits.map(u=>`<option>${u}</option>`).join('');
+    const karuSel=document.getElementById('karu-sel');
+    karuSel.innerHTML='<option value="">-- Pilih --</option>'+names.map(n=>`<option>${n}</option>`).join('');
+    document.getElementById('abs-dashboard').style.display='block';
+    updateDashboard();
+    toast('✓ '+count+' entri dari '+names.length+' karyawan berhasil diimport!');
+  };
+  reader.readAsText(input.files[0]);
+}
+
+function getUserConfig(nama,unit,tglStr){
+  const u=(unit||'').toLowerCase();
+  let isSabtu=false;
+  if(tglStr){const p=tglStr.split('-');const d=new Date(p[2],p[1]-1,p[0]);isSabtu=d.getDay()===6;}
+  if(u.includes('cleaning service')||u.includes('kasir'))return{label:'12 Jam',mins:720};
+  if(karuList.includes(nama))return isSabtu?{label:'Karu (Sabtu 4j)',mins:240}:{label:'Karu (8j)',mins:480};
+  if(u.includes('perawat')||u.includes('rm')||u.includes('rekam medis'))return isSabtu?{label:'Sabtu 4j',mins:240}:{label:'7 Jam',mins:420};
+  return isSabtu?{label:'Sabtu 4j',mins:240}:{label:'8 Jam',mins:480};
+}
+
+function hitung(msk,plg,std){
+  if(!plg||plg==='-'||plg===msk)return{ks:'Bln Scan',ls:'0m',k:0,l:0};
+  const toM=s=>{const p=s.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+  let mIn=toM(msk),mOut=toM(plg);
+  if(mOut<mIn)mOut+=1440;
+  const dur=mOut-mIn;
+  const l=dur>std?dur-std:0,k=dur<std?std-dur:0;
+  return{ks:k>0?fmt(k):'0m',ls:l>0?fmt(l):'0m',k,l};
+}
+
+function showIndividu(){
+  const n=document.getElementById('abs-name-sel').value;
+  const u=masterDB[n];if(!u)return;
+  const dates=Object.keys(u.logs).sort((a,b)=>new Date(a.split('-').reverse().join('-'))-new Date(b.split('-').reverse().join('-')));
+  const last=u.logs[dates[dates.length-1]];
+  document.getElementById('abs-unit').textContent=last.unit;
+  document.getElementById('abs-hari').textContent=dates.length+' Hari';
+  document.getElementById('abs-aturan').textContent=getUserConfig(n,u.logs[dates[0]].unit,dates[0]).label;
+  let sumK=0,sumL=0;
+  const rows=dates.map(t=>{
+    const dl=u.logs[t],lgs=dl.times.sort(),m=lgs[0],p=lgs.length>1?lgs[lgs.length-1]:'-';
+    const cfg=getUserConfig(n,dl.unit,t),r=hitung(m,p,cfg.mins);
+    sumK+=r.k;sumL+=r.l;
+    const day=new Date(t.split('-').reverse().join('-')).toLocaleDateString('id-ID',{weekday:'long'});
+    const isSat=day==='Sabtu';
+    return `<tr><td style="text-align:left"><span style="color:${isSat?'#d97706':'#2563eb'};font-weight:700">${day}</span>, ${t}</td>
+      <td style="font-size:10px;color:#64748b">${dl.unit}</td>
+      <td class="mono" style="color:#16a34a">${m}</td>
+      <td class="mono" style="color:#2563eb">${p}</td>
+      <td class="kurang-cell" style="background:#fef2f2">${r.ks}</td>
+      <td class="lembur-cell" style="background:#f0fdf4">${r.ls}</td></tr>`;
+  });
+  document.getElementById('abs-tbody').innerHTML=rows.join('');
+  document.getElementById('s-kurang').textContent='Kurang: '+fmt(sumK);
+  document.getElementById('s-lembur').textContent='Lembur: '+fmt(sumL);
+  document.getElementById('s-net').textContent='Net: '+fmt(sumL-sumK);
+}
+
+function generateReport(){
+  const s=document.getElementById('p-start').value,e=document.getElementById('p-end').value;
+  if(!s||!e){toast('Pilih tanggal mulai dan akhir!','red');return;}
+  const dS=new Date(s),dE=new Date(e);
+  const fu=document.getElementById('p-unit').value;
+  let rows='';
+  Object.keys(masterDB).sort().forEach(nama=>{
+    const u=masterDB[nama];
+    let byUnit={};
+    Object.keys(u.logs).forEach(t=>{
+      const [dd,mm,yy]=t.split('-').map(Number),ld=new Date(yy,mm-1,dd);
+      if(ld>=dS&&ld<=dE){
+        const un=u.logs[t].unit;
+        if(fu&&un!==fu)return;
+        if(!byUnit[un])byUnit[un]={tk:0,tl:0,h:0};
+        const lgs=u.logs[t].times.sort(),r=hitung(lgs[0],lgs.length>1?lgs[lgs.length-1]:'-',getUserConfig(nama,un,t).mins);
+        byUnit[un].h++;byUnit[un].tk+=r.k;byUnit[un].tl+=r.l;
+      }
+    });
+    Object.keys(byUnit).forEach(un=>{
+      const d=byUnit[un],net=d.tl-d.tk;
+      rows+=`<tr><td style="text-align:left;font-weight:600">${nama}</td>
+        <td style="text-align:left"><span class="unit-pill" style="${unitColor(un)}">${un}</span></td>
+        <td>${d.h} Hari</td><td style="color:#dc2626">${fmt(d.tk)}</td>
+        <td style="color:#16a34a">${fmt(d.tl)}</td>
+        <td style="color:${net>=0?'#4f46e5':'#d97706'};font-weight:700">${fmt(net)}</td></tr>`;
+    });
+  });
+  document.getElementById('akum-tbody').innerHTML=rows||'<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:20px">Tidak ada data pada periode ini</td></tr>';
+  if(rows) toast('✓ Laporan periode berhasil digenerate');
+  else toast('Tidak ada data pada periode tersebut','blue');
+}
+
+function addKaru(){
+  const n=document.getElementById('karu-sel').value;
+  if(n&&!karuList.includes(n)){karuList.push(n);renderKaruList();toast('✓ '+n+' ditambahkan ke Karu');}
+}
+function renderKaruList(){
+  const c=document.getElementById('karu-list');
+  if(!karuList.length){c.innerHTML='<span style="font-size:11px;color:#94a3b8;font-style:italic">Belum ada Karu</span>';return;}
+  c.innerHTML=karuList.map((n,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:#fffbeb;color:#92400e;border:1px solid #fcd34d;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600">${n}<button onclick="removeKaru(${i})" style="background:none;border:none;cursor:pointer;color:#d97706;font-weight:800;padding:0;margin-left:2px">×</button></span>`).join('');
+}
+function removeKaru(i){karuList.splice(i,1);renderKaruList();}
+function clearAbsDB(){if(confirm('Hapus semua data absensi?')){masterDB={};document.getElementById('abs-name-sel').innerHTML='<option value="">-- Pilih --</option>';document.getElementById('abs-tbody').innerHTML='';document.getElementById('akum-tbody').innerHTML='';document.getElementById('abs-dashboard').style.display='none';toast('Database absensi direset','blue');}}
+
+function exportIndividu(){const n=document.getElementById('abs-name-sel').value;if(!n){toast('Pilih karyawan dulu!','red');return;}toast('Export Excel tersedia di file HTML yang didownload','blue');}
+function exportAkumulasi(){toast('Export Excel tersedia di file HTML yang didownload','blue');}
+
+// =========== INIT ===========
+document.getElementById('page-date').textContent = new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+document.getElementById('log-tgl').value = new Date().toISOString().split('T')[0];
+document.getElementById('sep-tgl').value = new Date().toISOString().split('T')[0];
+document.querySelectorAll('.admin-menu').forEach(el=>el.style.opacity='0.4');
+renderTickets();
+renderStok();
+renderLogHist();
+renderBerkas();
+updateDashboard();
+</script>
