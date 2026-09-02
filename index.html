@@ -1083,29 +1083,33 @@ function processExcelExport(karyawan, unit, dateRange, unitLabel, start, end, fi
 }
 
 // --- ENGINE EXPORT KE PDF (FINAL: ANTI BLANK, ANTI MELOROT, GARIS TEBAL) ---
+// --- ENGINE EXPORT KE PDF (FIXED: FIT TO PAGE & RESPONSIVE TABLE) ---
 function processPdfExport(karyawan, unit, dateRange, unitLabel, start, end, filename) {
-    const renderArea = $('#pdfRenderArea').empty().css('padding', '5mm');
+    const renderArea = $('#pdfRenderArea').empty().css({
+        'padding': '10mm',
+        'width': '190mm',
+        'background': '#ffffff',
+        'box-sizing': 'border-box'
+    });
 
     let htmlContent = `
-        <div style="border-bottom: 3px solid #10b981; padding-bottom: 8px; margin-bottom: 12px; font-family: 'Montserrat', sans-serif; width: 100%;">
-            <h1 style="font-size: 15px; font-weight: 800; color: #1e293b; margin: 0; text-transform: uppercase;">Laporan Rekap Absensi</h1>
-            <div style="display: flex; margin-top: 4px; font-size: 10px; color: #64748b; font-weight: 600; gap: 20px;">
-                <div>UNIT KERJA: <span style="color: #0f172a; font-weight: 700;">${unitLabel || '-'}</span></div>
-                <div>PERIODE: <span style="color: #2563eb; font-weight: 700;">${start} s/d ${end}</span></div>
+        <div style="font-family: 'Montserrat', sans-serif; width: 100%; color: #1e293b;">
+            <div style="border-bottom: 3px solid #10b981; padding-bottom: 6px; margin-bottom: 10px;">
+                <h1 style="font-size: 14px; font-weight: 800; margin: 0; text-transform: uppercase;">Laporan Rekap Absensi</h1>
+                <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 9px; font-weight: 600; color: #64748b;">
+                    <div>UNIT KERJA: <span style="color: #0f172a; font-weight: 700;">${unitLabel || '-'}</span></div>
+                    <div>PERIODE: <span style="color: #2563eb; font-weight: 700;">${start} s/d ${end}</span></div>
+                </div>
             </div>
-        </div>
     `;
 
     let targetList = [];
-    
-    // Jika user memilih 1 karyawan spesifik lewat dropdown select
     if (karyawan && karyawan.trim() !== "") {
         targetList.push(karyawan);
     } else {
-        // Jika filter unit aktif, ambil semua karyawan yang memiliki kecocokan nama unit kerja
         targetList = Object.keys(masterDB).filter(n => {
-            if (!unit || unit.trim() === "") return true; // kalau unit kosong, keluarin semua nama
-            return masterDB[n].unit === unit || masterDB[n].unit === unitLabel; // toleransi kecocokan ID unit / label unit
+            if (!unit || unit.trim() === "") return true;
+            return masterDB[n].unit === unit || masterDB[n].unit === unitLabel;
         }).sort((a,b) => {
             const aK = typeof isKaru === 'function' && isKaru(a) ? 0 : 1;
             const bK = typeof isKaru === 'function' && isKaru(b) ? 0 : 1;
@@ -1114,7 +1118,6 @@ function processPdfExport(karyawan, unit, dateRange, unitLabel, start, end, file
         });
     }
 
-    // PENTING: Jika setelah di-filter daftarnya tetap kosong, coba ambil semua database sebagai fallback darurat
     if (targetList.length === 0) {
         targetList = Object.keys(masterDB).sort((a,b) => a.localeCompare(b));
     }
@@ -1125,26 +1128,26 @@ function processPdfExport(karyawan, unit, dateRange, unitLabel, start, end, file
         const totalHadir = u && u.logs ? Object.keys(u.logs).length : 0;
 
         htmlContent += `
-            <div style="margin-bottom: 15px; page-break-inside: avoid; font-family: 'Montserrat', sans-serif; width: 100%;">
-                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 10px; border-radius: 6px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;">
-                    <div style="font-size: 10px; font-weight: 700; color: #1e293b;">
-                        👤 ${nama} ${isK ? '<span style="background-color:#1e293b; color:white; font-size:8px; padding:1px 4px; border-radius:4px; margin-left:4px; font-weight:800">✦ KARU</span>' : ''}
+            <div style="margin-bottom: 12px; page-break-inside: avoid; width: 100%;">
+                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 5px 8px; border-radius: 4px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 9px; font-weight: 700; color: #1e293b;">
+                        👤 ${nama} ${isK ? '<span style="background-color:#1e293b; color:white; font-size:7px; padding:1px 3px; border-radius:3px; margin-left:4px; font-weight:800">✦ KARU</span>' : ''}
                     </div>
-                    <div style="font-size: 9px; font-weight: 700; color: #475569; background:#e2e8f0; padding:1px 5px; border-radius:4px;">
+                    <div style="font-size: 8px; font-weight: 700; color: #475569; background:#e2e8f0; padding:1px 4px; border-radius:3px;">
                         Kehadiran: ${totalHadir} Hari
                     </div>
                 </div>
 
-                <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: white; width: 100%; box-sizing: border-box;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 9px; table-layout: fixed;">
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; background: white; width: 100%;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 8.5px; table-layout: fixed;">
                         <thead>
                             <tr style="background-color: #1e293b; color: white; font-size: 8px; text-transform: uppercase;">
-                                <th style="padding: 10px 8px; font-weight: 800; text-align: left; width: 33%;">Hari / Tanggal</th>
-                                <th style="padding: 10px 4px; font-weight: 800; width: 11%;">Masuk</th>
-                                <th style="padding: 10px 4px; font-weight: 800; width: 11%;">Pulang</th>
-                                <th style="padding: 10px 4px; font-weight: 800; width: 13%;">Jam Kerja</th>
-                                <th style="padding: 10px 4px; font-weight: 800; width: 18%; background-color: #7f1d1d;">Kekurangan Jam</th>
-                                <th style="padding: 10px 4px; font-weight: 800; width: 14%; background-color: #064e3b;">Lembur</th>
+                                <th style="padding: 6px 4px; font-weight: 800; text-align: left; width: 34%;">Hari / Tanggal</th>
+                                <th style="padding: 6px 2px; font-weight: 800; width: 11%;">Masuk</th>
+                                <th style="padding: 6px 2px; font-weight: 800; width: 11%;">Pulang</th>
+                                <th style="padding: 6px 2px; font-weight: 800; width: 12%;">Jam Kerja</th>
+                                <th style="padding: 6px 2px; font-weight: 800; width: 18%; background-color: #7f1d1d;">Kekurangan</th>
+                                <th style="padding: 6px 2px; font-weight: 800; width: 14%; background-color: #064e3b;">Lembur</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1167,32 +1170,32 @@ function processPdfExport(karyawan, unit, dateRange, unitLabel, start, end, file
                 const r = hitung(m, p, std);
 
                 htmlContent += `
-                    <tr style="background-color: ${rowBg}; border-bottom: 1.5px solid #cbd5e1; height: 28px;">
-                        <td style="padding: 4px 6px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; border-bottom: 1.5px solid #cbd5e1;">
+                    <tr style="background-color: ${rowBg}; border-bottom: 1px solid #e2e8f0; height: 22px;">
+                        <td style="padding: 3px 4px; text-align: left; font-weight: 600; color: #334155; white-space: nowrap; overflow: hidden; border-bottom: 1px solid #e2e8f0;">
                             <span style="color: ${isSabtu ? '#ea580c' : '#2563eb'}; font-weight: 800;">${hari.substring(0,3)}</span>, ${t}
                         </td>
-                        <td style="padding: 4px 2px; color: #16a34a; font-weight: 700; white-space: nowrap; border-bottom: 1.5px solid #cbd5e1;">${m}</td>
-                        <td style="padding: 4px 2px; color: #2563eb; font-weight: 700; white-space: nowrap; border-bottom: 1.5px solid #cbd5e1;">${p}</td>
-                        <td style="padding: 4px 2px; color: #475569; white-space: nowrap; border-bottom: 1.5px solid #cbd5e1;">
-                            <span style="background: #f1f5f9; padding: 1px 3px; border-radius: 4px; font-size: 8px; font-weight:700; border: 1px solid #cbd5e1;">${stdText}</span>
+                        <td style="padding: 3px 2px; color: #16a34a; font-weight: 700; border-bottom: 1px solid #e2e8f0;">${m}</td>
+                        <td style="padding: 3px 2px; color: #2563eb; font-weight: 700; border-bottom: 1px solid #e2e8f0;">${p}</td>
+                        <td style="padding: 3px 2px; color: #475569; border-bottom: 1px solid #e2e8f0;">
+                            <span style="background: #f1f5f9; padding: 1px 3px; border-radius: 3px; font-size: 7.5px; font-weight:700; border: 1px solid #cbd5e1;">${stdText}</span>
                         </td>
-                        <td style="padding: 4px 2px; color: #dc2626; background-color: rgba(254, 242, 242, 0.7); font-weight: 700; white-space: nowrap; border-bottom: 1.5px solid #cbd5e1;">${r.ks}</td>
-                        <td style="padding: 4px 2px; color: #15803d; background-color: rgba(240, 253, 250, 0.7); font-weight: 700; white-space: nowrap; border-bottom: 1.5px solid #cbd5e1;">${r.ls}</td>
+                        <td style="padding: 3px 2px; color: #dc2626; background-color: rgba(254, 242, 242, 0.6); font-weight: 700; border-bottom: 1px solid #e2e8f0;">${r.ks}</td>
+                        <td style="padding: 3px 2px; color: #15803d; background-color: rgba(240, 253, 250, 0.6); font-weight: 700; border-bottom: 1px solid #e2e8f0;">${r.ls}</td>
                     </tr>
                 `;
             } else {
                 htmlContent += `
-                    <tr style="background-color: rgba(241, 245, 249, 0.8); font-style: italic; color: #94a3b8; height: 28px;">
-                        <td style="padding: 4px 6px; text-align: left; font-weight: 600; white-space: nowrap; overflow: hidden; border-bottom: 1.5px solid #cbd5e1;">
+                    <tr style="background-color: #f8fafc; font-style: italic; color: #94a3b8; height: 22px;">
+                        <td style="padding: 3px 4px; text-align: left; font-weight: 600; white-space: nowrap; overflow: hidden; border-bottom: 1px solid #e2e8f0;">
                             <span style="color: ${isSabtu ? '#ea580c' : '#94a3b8'}; font-weight: 700;">${hari.substring(0,3)}</span>, ${t}
                         </td>
-                        <td style="padding: 4px 2px; color: #cbd5e1; border-bottom: 1.5px solid #cbd5e1;">—</td>
-                        <td style="padding: 4px 2px; color: #cbd5e1; border-bottom: 1.5px solid #cbd5e1;">—</td>
-                        <td style="padding: 4px 2px; white-space: nowrap; border-bottom: 1.5px solid #cbd5e1;">
-                            <span style="background: #e2e8f0; padding: 1px 3px; border-radius: 4px; font-size: 8px; color: #94a3b8; border: 1px solid #cbd5e1;">${stdText}</span>
+                        <td style="padding: 3px 2px; color: #cbd5e1; border-bottom: 1.5px solid #cbd5e1;">—</td>
+                        <td style="padding: 3px 2px; color: #cbd5e1; border-bottom: 1.5px solid #cbd5e1;">—</td>
+                        <td style="padding: 3px 2px; border-bottom: 1px solid #e2e8f0;">
+                            <span style="background: #e2e8f0; padding: 1px 3px; border-radius: 3px; font-size: 7.5px; color: #64748b; border: 1px solid #cbd5e1;">${stdText}</span>
                         </td>
-                        <td style="padding: 4px 2px; color: #f87171; background-color: rgba(254, 242, 242, 0.2); font-weight: 700; font-size: 8px; white-space: nowrap; border-bottom: 1.5px solid #cbd5e1;">Mangkir/Libur</td>
-                        <td style="padding: 4px 2px; color: #cbd5e1; border-bottom: 1.5px solid #cbd5e1;">0m</td>
+                        <td style="padding: 3px 2px; color: #ef4444; background-color: rgba(254, 242, 242, 0.3); font-weight: 700; font-size: 7.5px; border-bottom: 1px solid #e2e8f0;">Mangkir/Libur</td>
+                        <td style="padding: 3px 2px; color: #cbd5e1; border-bottom: 1px solid #e2e8f0;">0m</td>
                     </tr>
                 `;
             }
@@ -1206,10 +1209,11 @@ function processPdfExport(karyawan, unit, dateRange, unitLabel, start, end, file
         `;
     });
 
+    htmlContent += `</div>`;
     renderArea.html(htmlContent);
 
     const opt = {
-        margin:       [8, 8, 8, 8], 
+        margin:       [5, 5, 5, 5], 
         filename:     `${filename}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2, useCORS: true, logging: false }, 
@@ -1217,13 +1221,12 @@ function processPdfExport(karyawan, unit, dateRange, unitLabel, start, end, file
     };
 
     html2pdf().set(opt).from(renderArea[0]).save().then(() => {
-        renderArea.css('padding', '0').empty();
+        renderArea.empty();
     });
 }
 
 </script>
 
-<div id="pdfRenderArea" style="position: relative; opacity: 100; pointer-events: none; width: 190mm; background: white; font-family: 'Montserrat', sans-serif; height: 300;"></div>
-
+<div id="pdfRenderArea" style="position: fixed; opacity: 100; pointer-events: none; width: 190mm; background: white; font-family: 'Montserrat', sans-serif; height: 100;"></div>
 </body>
 </html>
