@@ -100,6 +100,13 @@
                 <p class="text-blue-600 tracking-widest text-xs mt-1 uppercase italic" style="font-weight:700">By Fikri Lelaki Ganteng · v2</p>
             </div>
         </div>
+
+        <div class="hidden sm:flex items-center justify-center">
+            <button id="btnOpenGame" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white px-5 py-2.5 rounded-2xl font-extrabold text-xs shadow-md transition-all flex items-center gap-2 border-2 border-amber-300">
+                🎮 Mini Games
+            </button>
+        </div>
+
         <div class="text-right hidden md:block">
             <p class="text-[10px] text-slate-400 uppercase tracking-widest" style="font-weight:700">Database Lokal (Browser)</p>
             <p class="text-xs text-slate-500" id="currentDate"></p>
@@ -117,7 +124,13 @@
             </h2>
             <input type="file" id="fileInput" accept=".html" multiple
     class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-blue-50 file:text-blue-700 cursor-pointer" style="font-weight:700"/>
-            <p class="text-[10px] text-slate-400 mt-3" style="font-weight:600">Data tersimpan otomatis di browser (localStorage)</p>
+            <p class="text-[10px] text-slate-400 mt-2" style="font-weight:600">Data tersimpan otomatis di browser (localStorage)</p>
+
+            <!-- List file yang ter-import -->
+            <div class="mt-3 pt-3 border-t border-slate-100">
+                <p class="text-[9px] text-slate-400 uppercase tracking-wider mb-2" style="font-weight:800">File Ter-import:</p>
+                <div id="importedFileList" class="space-y-1.5 max-h-28 overflow-y-auto pr-1"></div>
+            </div>
         </div>
 
         <!-- Karu Settings — now with unit filter -->
@@ -169,7 +182,7 @@
 
     <!-- ===== MAIN DASHBOARD ===== -->
     <div id="mainDashboard" class="card hidden border-t-4 border-emerald-500">
-    
+        
     <!-- Bagian Atas: Filter & Tombol Aksi (Diatur agar rapi ke bawah/flex-wrap) -->
     <div class="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4 mb-6 no-print">
         
@@ -217,36 +230,31 @@
 
     <!-- Info strip -->
     <div id="infoStrip" class="hidden flex-col md:flex-row gap-4 mb-6">
-        <!-- ... (bagian info strip tetap sama seperti sebelumnya) ... -->
-    </div>
-
-        <!-- Info strip -->
-        <div id="infoStrip" class="hidden flex-col md:flex-row gap-4 mb-6">
-            <div class="flex-1 grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <div class="text-center">
-                    <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Unit</p>
-                    <p id="infoUnit" class="text-xs text-slate-700" style="font-weight:800">-</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Aturan Jam</p>
-                    <p id="infoJamKerja" class="text-xs text-blue-600" style="font-weight:800">-</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Kehadiran</p>
-                    <p id="totalHari" class="text-xs text-slate-700" style="font-weight:800">-</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Karu</p>
-                    <p id="infoKaru" class="text-xs" style="font-weight:800">-</p>
-                </div>
-                <div class="text-center border-l border-slate-200">
-                    <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Status</p>
-                    <p class="text-[10px] text-emerald-600 bg-emerald-100 rounded px-2 py-0.5 inline-block uppercase" style="font-weight:800">Aktif</p>
-                </div>
+        <div class="flex-1 grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div class="text-center">
+                <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Unit</p>
+                <p id="infoUnit" class="text-xs text-slate-700" style="font-weight:800">-</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Aturan Jam</p>
+                <p id="infoJamKerja" class="text-xs text-blue-600" style="font-weight:800">-</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Kehadiran</p>
+                <p id="totalHari" class="text-xs text-slate-700" style="font-weight:800">-</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Karu</p>
+                <p id="infoKaru" class="text-xs" style="font-weight:800">-</p>
+            </div>
+            <div class="text-center border-l border-slate-200">
+                <p class="text-[9px] text-slate-400 uppercase" style="font-weight:800">Status</p>
+                <p class="text-[10px] text-emerald-600 bg-emerald-100 rounded px-2 py-0.5 inline-block uppercase" style="font-weight:800">Aktif</p>
             </div>
         </div>
+    </div>
 
-            <!-- Table: single karyawan view OR unit group view -->
+        <!-- Table: single karyawan view OR unit group view -->
         <div class="rounded-2xl border border-slate-200 overflow-hidden w-full block">
             <div style="max-height: 480px; overflow-y: auto; overflow-x: auto; display: block; width: 100%; position: relative;">
                 <table class="w-full text-left text-sm border-separate style-table" style="min-width: 700px; table-layout: fixed; border-spacing: 0;">
@@ -300,21 +308,50 @@
 
 </div><!-- end max-w -->
 
+<!-- ===== MODAL WELCOME POP-UP ===== -->
+<div id="welcomeModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 max-w-sm w-full text-center space-y-4">
+        <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-3xl">
+            🎮
+        </div>
+        <div>
+            <h3 class="text-lg font-black text-slate-800 uppercase tracking-wide">PERHATIAN GES!</h3>
+            <p class="text-sm font-bold text-amber-600 mt-2 leading-relaxed">
+                COBA MAIN GAME SEBELUM REKAP ABSEN GES!! 🔥
+            </p>
+        </div>
+        <div class="flex flex-col gap-2 pt-2">
+            <button id="btnPlayFromWelcome" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-3 rounded-2xl shadow-md transition-all active:scale-95 text-xs uppercase tracking-wider">
+                🕹️ Langsung Main Game
+            </button>
+            <button id="btnCloseWelcome" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-2xl transition-all text-xs">
+                Nanti Dulu, Lanjut Rekap
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL MINI GAME FLAPPY BIRD ===== -->
+<div id="gameModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 max-w-sm w-full flex flex-col items-center relative">
+        <button id="btnCloseGame" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+        <h3 class="text-lg font-black text-slate-800 uppercase tracking-wide mb-1">Flappy Bird FLG 🐤</h3>
+        <p class="text-[11px] text-slate-400 font-bold mb-3">Klik Canvas / Tekan [Spasi] untuk Terbang</p>
+        <canvas id="flappyCanvas" width="320" height="400" class="border-2 border-slate-200 rounded-2xl bg-sky-200 cursor-pointer shadow-inner"></canvas>
+    </div>
+</div>
+
 <script>
     
 // ============================================================
 // STATE
 // ============================================================
-let masterDB   = JSON.parse(localStorage.getItem('fikri_absensi_db'))  || {};
-let karuData   = JSON.parse(localStorage.getItem('karuData_v2'))       || {};
-// karuData = { unitName: [namaKaru, ...], ... }
-
-// unitHours: default jam kerja per unit (in minutes)
-let unitHours  = JSON.parse(localStorage.getItem('unitHours_v2'))      || {};
-// karHours:  override per karyawan individu (in minutes), 0 = no override
-let karHours   = JSON.parse(localStorage.getItem('karHours_v2'))       || {};
-// karuHours: jam kerja khusus Karu per nama (in minutes). Default 480 (8j) jika tidak diset
-let karuHours  = JSON.parse(localStorage.getItem('karuHours_v2'))      || {};
+let masterDB      = JSON.parse(localStorage.getItem('fikri_absensi_db'))  || {};
+let karuData      = JSON.parse(localStorage.getItem('karuData_v2'))       || {};
+let unitHours     = JSON.parse(localStorage.getItem('unitHours_v2'))      || {};
+let karHours      = JSON.parse(localStorage.getItem('karHours_v2'))       || {};
+let karuHours     = JSON.parse(localStorage.getItem('karuHours_v2'))      || {};
+let importedFiles = JSON.parse(localStorage.getItem('fikri_imported_files')) || [];
 
 const TOLERANSI = 0;
 
@@ -329,10 +366,11 @@ if (oldKaruList.length > 0 && Object.keys(karuData).length === 0) {
     saveKaruData();
 }
 
-function saveKaruData()  { localStorage.setItem('karuData_v2', JSON.stringify(karuData)); }
-function saveUnitHours() { localStorage.setItem('unitHours_v2', JSON.stringify(unitHours)); }
-function saveKarHours()  { localStorage.setItem('karHours_v2', JSON.stringify(karHours)); }
-function saveKaruHours() { localStorage.setItem('karuHours_v2', JSON.stringify(karuHours)); }
+function saveKaruData()      { localStorage.setItem('karuData_v2', JSON.stringify(karuData)); }
+function saveUnitHours()     { localStorage.setItem('unitHours_v2', JSON.stringify(unitHours)); }
+function saveKarHours()      { localStorage.setItem('karHours_v2', JSON.stringify(karHours)); }
+function saveKaruHours()     { localStorage.setItem('karuHours_v2', JSON.stringify(karuHours)); }
+function saveImportedFiles() { localStorage.setItem('fikri_imported_files', JSON.stringify(importedFiles)); }
 
 // ============================================================
 // HELPERS
@@ -345,7 +383,6 @@ function fmt(m) {
     return (m < 0 ? '-' : '') + (j > 0 ? j + 'j ' : '') + mn + 'm';
 }
 
-// Sesuaikan fungsi getDateRangeFromDB agar bisa menerima custom start & end date
 function getDateRangeFromDB(customStart, customEnd) {
     let allDates = [];
     Object.values(masterDB).forEach(u => {
@@ -366,7 +403,6 @@ function getDateRangeFromDB(customStart, customEnd) {
     let start = parseDate(allDates[0]);
     let end = parseDate(allDates[allDates.length - 1]);
 
-    // Jika input filter tanggal di atas diisi oleh user
     if (customStart) start = new Date(customStart);
     if (customEnd) end = new Date(customEnd);
     
@@ -399,41 +435,32 @@ function karuUnit(nama) {
     return null;
 }
 
-// Returns std minutes for a given person on a given date
 function getStdMins(nama, unit, tglStr) {
-    // Determine if Saturday
     let isSabtu = false;
     if (tglStr) {
         const p = tglStr.split('-');
-        // format: DD-MM-YYYY
         const d = new Date(p[2], p[1]-1, p[0]);
         isSabtu = d.getDay() === 6;
     }
 
-    // Saturday = always 4j for everyone (kecuali 12j unit)
     const u = (unit || '').toLowerCase();
     const is12j = u.includes('cleaning service') || u.includes('kasir');
 
-    // 1. Per-karyawan override (takes highest priority, Sabtu still capped 4j unless 12j unit)
     if (karHours[nama] && karHours[nama] > 0) {
         if (isSabtu && !is12j) return 240;
         return karHours[nama];
     }
 
-    // 2. Karu — jam karu disimpan di karuHours[nama], default 8j (480)
-    //    Sabtu karu = 4j
     if (isKaru(nama)) {
         if (isSabtu) return 240;
-        return karuHours[nama] || 480; // default karu 8j
+        return karuHours[nama] || 480;
     }
 
-    // 3. Per-unit custom hours
     if (unitHours[unit]) {
         if (isSabtu && !is12j) return 240;
         return unitHours[unit];
     }
 
-    // 4. Built-in defaults
     if (is12j) return 720;
     if (u.includes('perawat') || u.includes('rm') || u.includes('rekam medis')) {
         return isSabtu ? 240 : 420;
@@ -457,7 +484,7 @@ function hitung(msk, plg, stdMins) {
     if (!plg || plg === '-') return { ks: 'Belom Scan', ls: '0m', k: 0, l: 0 };
     const toM = s => { const p = s.split(':'); return parseInt(p[0])*60 + parseInt(p[1]); };
     let d = toM(plg) - toM(msk);
-    if (d < 0) d += 1440; // overnight
+    if (d < 0) d += 1440;
     if (Math.abs(d - stdMins) <= TOLERANSI) d = stdMins;
     const l = d > stdMins ? d - stdMins : 0;
     const k = d < stdMins ? stdMins - d : 0;
@@ -472,11 +499,47 @@ $(document).ready(function() {
     if (Object.keys(masterDB).length > 0) refreshUI();
     renderKaruList();
     buildKaruUnitFilter();
+    renderImportedFiles();
+
+    // Listener Modal Welcome Pop-Up
+    $('#btnPlayFromWelcome').on('click', function() {
+        $('#welcomeModal').addClass('hidden');
+        $('#btnOpenGame').trigger('click');
+    });
+
+    $('#btnCloseWelcome').on('click', function() {
+        $('#welcomeModal').addClass('hidden');
+    });
 });
 
 // ============================================================
-// FILE IMPORT
+// RENDER & REMOVE IMPORTED FILES
 // ============================================================
+function renderImportedFiles() {
+    const $container = $('#importedFileList').empty();
+    if (importedFiles.length === 0) {
+        $container.append('<p class="text-[10px] text-slate-300 italic" style="font-weight:600">Belum ada file di-import</p>');
+        return;
+    }
+    importedFiles.forEach((file, index) => {
+        $container.append(`
+            <div class="flex items-center justify-between bg-blue-50/60 border border-blue-100 px-2.5 py-1 rounded-lg text-[11px] text-blue-700">
+                <span class="truncate font-semibold flex items-center gap-1.5">
+                    📄 ${file.name}
+                    <span class="text-[9px] text-slate-400 font-normal">(${file.date})</span>
+                </span>
+                <button onclick="removeImportedFile(${index})" class="text-blue-400 hover:text-red-500 font-bold ml-2">×</button>
+            </div>
+        `);
+    });
+}
+
+window.removeImportedFile = (index) => {
+    importedFiles.splice(index, 1);
+    saveImportedFiles();
+    renderImportedFiles();
+};
+
 // ============================================================
 // FILE IMPORT (MANDATORY MULTI-FILE SUPPORT)
 // ============================================================
@@ -486,8 +549,13 @@ $('#fileInput').on('change', function(e) {
 
     let processedFiles = 0;
     let totalEntriesAdded = 0;
+    const nowStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
     Array.from(files).forEach(file => {
+        if (!importedFiles.some(f => f.name === file.name)) {
+            importedFiles.push({ name: file.name, date: nowStr });
+        }
+
         const reader = new FileReader();
         reader.onload = function(ev) {
             const doc = new DOMParser().parseFromString(ev.target.result, 'text/html');
@@ -505,7 +573,6 @@ $('#fileInput').on('change', function(e) {
                 if (!masterDB[nama]) masterDB[nama] = { unit, logs: {} };
                 if (!masterDB[nama].logs[tgl]) masterDB[nama].logs[tgl] = [];
                 
-                // Masukkan jam jika belum ada di tanggal tersebut agar tidak duplikat
                 if (!masterDB[nama].logs[tgl].includes(jam)) {
                     masterDB[nama].logs[tgl].push(jam);
                     fileCount++;
@@ -515,18 +582,19 @@ $('#fileInput').on('change', function(e) {
             totalEntriesAdded += fileCount;
             processedFiles++;
 
-            // Jika semua file sudah selesai dibaca, simpan ke localStorage dan refresh UI
             if (processedFiles === files.length) {
                 localStorage.setItem('fikri_absensi_db', JSON.stringify(masterDB));
+                saveImportedFiles();
+                renderImportedFiles();
                 alert(`✅ Berhasil mengimport ${files.length} file! Total ${totalEntriesAdded} entri absensi tergabung.`);
                 refreshUI();
-                // Reset value input file supaya bisa pilih file yang sama lagi jika diperlukan
                 $('#fileInput').val('');
             }
         };
         reader.readAsText(file);
     });
 });
+
 // ============================================================
 // REFRESH UI
 // ============================================================
@@ -534,7 +602,6 @@ function refreshUI() {
     initDropdowns();
     buildHoursPanel();
     $('#mainDashboard, #periodReport, #hoursPanel').removeClass('hidden');
-    // show hours panel only if toggled
     $('#hoursPanel').addClass('hidden');
 }
 
@@ -543,9 +610,7 @@ function refreshUI() {
 // ============================================================
 function initDropdowns() {
     const units = ['', ...allUnits()];
-    const names = Object.keys(masterDB).sort();
 
-    // Unit filter (main)
     const $uf = $('#unitFilter').empty();
     $uf.append('<option value="">— Semua Unit —</option>');
     units.forEach(u => {
@@ -553,7 +618,6 @@ function initDropdowns() {
     });
     $uf.select2({ placeholder: 'Semua Unit', width: '100%', allowClear: true });
 
-    // Unit filter (report)
     const $rf = $('#reportUnitFilter').empty();
     $rf.append('<option value="">— Semua Unit —</option>');
     units.forEach(u => {
@@ -562,18 +626,12 @@ function initDropdowns() {
     if ($rf.data('select2')) $rf.select2('destroy');
     $rf.select2({ placeholder: 'Semua Unit', width: '100%', allowClear: true });
 
-    // Name select (Report) - Inisialisasi awal
     buildReportNameSelect('');
-
-    // Name select (main)
     buildNameSelect('');
-
-    // Karu unit filter & karu select
     buildKaruUnitFilter();
     buildKaruNameSelect('');
 }
 
-// Fungsi pembantu untuk mengisi dropdown nama di laporan periode (bisa difilter berdasarkan unit)
 function buildReportNameSelect(unitFilter) {
     const names = Object.keys(masterDB).sort().filter(n =>
         !unitFilter || masterDB[n].unit === unitFilter
@@ -585,7 +643,6 @@ function buildReportNameSelect(unitFilter) {
     $s.select2({ placeholder: 'Semua Karyawan', width: '100%', allowClear: true });
 }
 
-// Event handler jika unit di laporan periode diubah, maka opsi nama karyawan ikut terfilter otomatis
 $('#reportUnitFilter').on('change', function() {
     const unit = $(this).val();
     buildReportNameSelect(unit);
@@ -604,13 +661,13 @@ function buildNameSelect(unitFilter) {
 
 function buildKaruUnitFilter() {
     const units = allUnits();
-    const $kuf = $('#karuUnitFilter').empty().append('<option value="">— Pilih Unit —</option>'); // Menambahkan opsi default kosong
+    const $kuf = $('#karuUnitFilter').empty().append('<option value="">— Pilih Unit —</option>');
     units.forEach(u => $kuf.append(`<option value="${u}">${u}</option> `));
     if ($kuf.data('select2')) $kuf.select2('destroy');
     $kuf.select2({ 
-        placeholder: '— Pilih Unit —', // Diperlukan agar allowClear berfungsi
+        placeholder: '— Pilih Unit —',
         width: '100%',
-        allowClear: true // Menampilkan tombol silang (x)
+        allowClear: true
     });
 }
 
@@ -618,17 +675,16 @@ function buildKaruNameSelect(unitFilter) {
     const names = Object.keys(masterDB).sort().filter(n =>
         !unitFilter || masterDB[n].unit === unitFilter
     );
-    const $s = $('#karuSelect').empty().append('<option value="">— Pilih Karu —</option>'); // Menambahkan opsi default kosong
+    const $s = $('#karuSelect').empty().append('<option value="">— Pilih Karu —</option>');
     names.forEach(n => $s.append(`<option value="${n}">${n}</option> `));
     if ($s.data('select2')) $s.select2('destroy');
     $s.select2({ 
-        placeholder: '— Pilih Karu —', // Diperlukan agar allowClear berfungsi
+        placeholder: '— Pilih Karu —',
         width: '100%',
-        allowClear: true // Menampilkan tombol silang (x)
+        allowClear: true
     });
 }
 
-// Unit filter changes → rebuild name select + re-render table
 $('#unitFilter').on('change', function() {
     const unit = $(this).val();
     buildNameSelect(unit);
@@ -649,10 +705,6 @@ $('#karuUnitFilter').on('change', function() {
 // ============================================================
 // INDIVIDUAL KARYAWAN TABLE
 // ============================================================
-// ============================================================
-// INDIVIDUAL KARYAWAN TABLE (MENAMPILKAN SEMUA TANGGAL)
-// ============================================================
-// Event saat tombol "Filter" tanggal utama diklik
 $('#btnFilterMainDate').on('click', function() {
     const curName = $('#nameSelect').val();
     const curUnit = $('#unitFilter').val();
@@ -665,7 +717,6 @@ $('#btnFilterMainDate').on('click', function() {
     }
 });
 
-// Sesuaikan logika di dalam event change #nameSelect
 $('#nameSelect').on('change', function() {
     const n  = $(this).val();
     const u  = masterDB[n];
@@ -679,8 +730,6 @@ $('#nameSelect').on('change', function() {
     }
 
     const unit  = u.unit;
-    
-    // Ambil nilai dari input filter tanggal baru di atas
     const sInput = $('#mainStartDate').val();
     const eInput = $('#mainEndDate').val();
     const fullDateRange = getDateRangeFromDB(sInput, eInput);
@@ -688,7 +737,6 @@ $('#nameSelect').on('change', function() {
     $('#infoStrip').removeClass('hidden').css('display', 'flex');
     $('#infoUnit').text(unit);
     
-    // Hitung kehadiran riil dalam rentang tanggal tersebut
     let totalHadir = 0;
     fullDateRange.forEach(t => {
         if (u.logs[t] && u.logs[t].length > 0) totalHadir++;
@@ -745,16 +793,12 @@ $('#nameSelect').on('change', function() {
 });
 
 // ============================================================
-// UNIT GROUP TABLE (show all karyawan in a unit, grouped)
-// ============================================================
-// ============================================================
-// UNIT GROUP TABLE (MENAMPILKAN SEMUA TANGGAL UNTUK TIAP KARYAWAN)
+// UNIT GROUP TABLE
 // ============================================================
 function renderUnitGroupTable(unit) {
     const tbody = $('#recapTableBody').empty();
     const fullDateRange = getDateRangeFromDB($('#mainStartDate').val(), $('#mainEndDate').val());
 
-    // Ambil semua karyawan di unit ini, karu ditaruh di paling atas
     const allInUnit = Object.keys(masterDB)
         .filter(n => masterDB[n].unit === unit)
         .sort((a, b) => {
@@ -773,7 +817,6 @@ function renderUnitGroupTable(unit) {
         const u    = masterDB[nama];
         const isK  = isKaru(nama);
 
-        // Header nama karyawan di dalam tabel kelompok
         const karuTag = isK ? `<span class="karu-badge ml-2">✦ KARU</span>` : '';
         const jamStd  = getStdMins(nama, unit, fullDateRange[0]);
         const jamLabel = jamStd % 60 === 0 ? `${jamStd/60}j` : fmt(jamStd);
@@ -811,7 +854,6 @@ function renderUnitGroupTable(unit) {
                     <td class="p-2 text-emerald-700 bg-emerald-50/50" style="font-weight:700">${r.ls}</td>
                 </tr>`);
             } else {
-                // JIKA HARI ITU KOSONG / TIDAK SCAN
                 tbody.append(`<tr class="text-center bg-gray-50/30 hover:bg-slate-100 text-xs italic text-slate-400">
                     <td class="p-2 pl-6 text-left" style="font-weight:600">
                         <span style="color:${isSabtu?'#ea580c':'#94a3b8'};font-weight:700">${hari}</span>, ${t}
@@ -838,7 +880,6 @@ $('#btnToggleHours').on('click', function() {
 });
 
 function buildHoursPanel() {
-    // Col 1: Per-unit default hours
     const $ul = $('#unitHoursList').empty();
     allUnits().forEach(unit => {
         const cur = unitHours[unit] ? unitHours[unit] / 60 : '';
@@ -852,7 +893,6 @@ function buildHoursPanel() {
             </div>`);
     });
 
-    // Col 2: Karu-specific hours (terpisah dari unit)
     const $karuHl = $('#karuHoursList').empty();
     const allKaruNames = [...new Set(Object.values(karuData).flat())].sort();
     if (allKaruNames.length === 0) {
@@ -874,7 +914,6 @@ function buildHoursPanel() {
         });
     }
 
-    // Col 3: Per-karyawan override (non-Karu only)
     const $kl = $('#karHoursList').empty();
     Object.keys(masterDB).sort().filter(n => !isKaru(n)).forEach(nama => {
         const cur = karHours[nama] ? karHours[nama] / 60 : '';
@@ -892,30 +931,26 @@ function buildHoursPanel() {
 }
 
 $('#btnSaveHours').on('click', function() {
-    // Save unit hours
     $('.unit-hours-inp').each(function() {
         const unit = $(this).data('unit');
         const val  = parseFloat($(this).val());
         if (!isNaN(val) && val > 0) unitHours[unit] = Math.round(val * 60);
         else delete unitHours[unit];
     });
-    // Save karyawan hours
     $('.kar-hours-inp').each(function() {
         const nama = $(this).data('nama');
         const val  = parseFloat($(this).val());
         if (!isNaN(val) && val > 0) karHours[nama] = Math.round(val * 60);
         else delete karHours[nama];
     });
-    // Save karu hours
     $('.karu-hours-inp').each(function() {
         const nama = $(this).data('nama');
         const val  = parseFloat($(this).val());
         if (!isNaN(val) && val > 0) karuHours[nama] = Math.round(val * 60);
-        else karuHours[nama] = 480; // default 8j
+        else karuHours[nama] = 480;
     });
     saveUnitHours(); saveKarHours(); saveKaruHours();
 
-    // Re-render current view
     const curName = $('#nameSelect').val();
     const curUnit = $('#unitFilter').val();
     if (curName) $('#nameSelect').trigger('change');
@@ -934,12 +969,10 @@ $('#btnAddKaru').on('click', function() {
     if (!karuData[unit]) karuData[unit] = [];
     if (!karuData[unit].includes(nama)) {
         karuData[unit].push(nama);
-        // Default jam karu 8j jika belum pernah diset
         if (!karuHours[nama]) karuHours[nama] = 480;
         saveKaruData(); saveKaruHours();
         renderKaruList();
         if (!$('#hoursPanel').hasClass('hidden')) buildHoursPanel();
-        // Re-render if needed
         const curName = $('#nameSelect').val();
         const curUnit = $('#unitFilter').val();
         if (curName) $('#nameSelect').trigger('change');
@@ -948,7 +981,7 @@ $('#btnAddKaru').on('click', function() {
 });
 
 function renderKaruList() {
-    const $c = $('#karuListDisplay').empty();
+    const $c =$('#karuListDisplay').empty();
     const units = Object.keys(karuData).sort();
     if (units.length === 0) {
         $c.append(`<p class="text-[10px] text-slate-400 italic" style="font-weight:600">Belum ada Karu yang ditambahkan</p>`);
@@ -957,7 +990,7 @@ function renderKaruList() {
     units.forEach(unit => {
         const arr = karuData[unit];
         if (!arr || arr.length === 0) return;
-        const $section = $(`
+        const $section =$(`
             <div class="karu-unit-section">
                 <p class="text-[9px] text-orange-600 uppercase tracking-widest mb-2" style="font-weight:800">Unit: ${unit}</p>
                 <div class="flex flex-wrap gap-2 karu-tags"></div>
@@ -993,15 +1026,14 @@ $('#btnGenerateReport').on('click', function() {
     if (!s || !e) return alert('Pilih tanggal dulu!');
     const dS = new Date(s), dE = new Date(e);
     const unitF = $('#reportUnitFilter').val();
-    const nameF = $('#reportNameSelect').val(); // Ambil filter nama yang dipilih
+    const nameF = $('#reportNameSelect').val();
     const tbody = $('#periodTableBody').empty();
 
-    // Group by unit
     const byUnit = {};
     Object.keys(masterDB).sort().forEach(nama => {
         const u = masterDB[nama];
         if (unitF && u.unit !== unitF) return;
-        if (nameF && nama !== nameF) return; // Filter spesifik nama karyawan
+        if (nameF && nama !== nameF) return;
 
         let tk = 0, tl = 0, hadir = 0;
         Object.keys(u.logs).forEach(t => {
@@ -1022,9 +1054,7 @@ $('#btnGenerateReport').on('click', function() {
     });
 
     Object.keys(byUnit).sort().forEach(unit => {
-        // Unit separator
         tbody.append(`<tr><td colspan="8" style="background:#f8fafc;padding:8px 14px;font-size:9px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.1em;border-top:2px solid #e2e8f0">${unit}</td></tr>`);
-        // Sort karu first
         byUnit[unit].sort((a,b) => (a.isKaru?0:1) - (b.isKaru?0:1) || a.nama.localeCompare(b.nama));
         byUnit[unit].forEach(row => {
             const net = row.tl - row.tk;
@@ -1055,30 +1085,28 @@ $('#btnGenerateReport').on('click', function() {
 $('#btnClearDB').on('click', function() {
     if (confirm('Hapus semua data absensi? (Pengaturan jam & karu tetap tersimpan)')) {
         localStorage.removeItem('fikri_absensi_db');
+        localStorage.removeItem('fikri_imported_files');
         masterDB = {};
+        importedFiles = [];
         location.reload();
     }
 });
+
 // ============================================================
 // LOGIC DROPDOWN EXPORT & ENGINE GENERATOR (EXCEL & PDF)
 // ============================================================
-
-// Buka-tutup dropdown menu export saat diklik
 $('#btnExportDropdown').on('click', function(e) {
     e.stopPropagation();
     $('#exportMenu').toggleClass('hidden');
 });
 
-// Tutup otomatis jika klik di luar area dropdown
-$(document).on('click', function() {
-    $('#exportMenu').addClass('hidden');
+$(document).on('click', function() {$('#exportMenu').addClass('hidden');
 });
 
 function exportDataAction(type) {
     const selectedKaryawan = $('#nameSelect').val();
     const selectedUnit = $('#unitFilter').val();
     
-    // Validasi data sebelum diexport
     if (!selectedKaryawan && !selectedUnit) {
         alert("Silakan pilih Karyawan atau Unit terlebih dahulu untuk melakukan export data!");
         return;
@@ -1098,22 +1126,18 @@ function exportDataAction(type) {
     if (type === 'excel') {
         processExcelExport(selectedKaryawan, selectedUnit, fullDateRange, unitLabel, startPeriode, endPeriode, filename);
     } else if (type === 'pdf') {
-        const customStart = $('#mainStartDate').val() ? $('#mainStartDate').val().split('-').reverse().join('-') : startPeriode;
-        const customEnd = $('#mainEndDate').val() ? $('#mainEndDate').val().split('-').reverse().join('-') : endPeriode;
         const filteredDateRange = getDateRangeFromDB($('#mainStartDate').val(), $('#mainEndDate').val());
-        
-    processPdfExport(selectedKaryawan, selectedUnit, filteredDateRange.length > 0 ? filteredDateRange : fullDateRange, unitLabel, filteredDateRange.length > 0 ? $('#mainStartDate').val().split('-').reverse().join('-') : startPeriode, filteredDateRange.length > 0 ? $('#mainEndDate').val().split('-').reverse().join('-') : endPeriode, filename);
-}
+        processPdfExport(selectedKaryawan, selectedUnit, filteredDateRange.length > 0 ? filteredDateRange : fullDateRange, unitLabel, filteredDateRange.length > 0 ? $('#mainStartDate').val().split('-').reverse().join('-') : startPeriode, filteredDateRange.length > 0 ? $('#mainEndDate').val().split('-').reverse().join('-') : endPeriode, filename);
+    }
 }
 
-// --- ENGINE EXPORT KE EXCEL (AUTO-FIT KOLOM) ---
 function processExcelExport(karyawan, unit, dateRange, unitLabel, start, end, filename) {
     let rawData = [];
     
     rawData.push(["LAPORAN REKAP DATA ABSENSI KARYAWAN"]);
     rawData.push([`Unit Kerja: ${unitLabel}`]);
     rawData.push([`Periode Tanggal: ${start} s/d ${end}`]);
-    rawData.push([]); // Spasi baris kosong
+    rawData.push([]);
 
     let targetList = [];
     if (karyawan) {
@@ -1154,7 +1178,6 @@ function processExcelExport(karyawan, unit, dateRange, unitLabel, start, end, fi
 
     const worksheet = XLSX.utils.aoa_to_sheet(rawData);
 
-    // Auto-fit lebar kolom Excel
     const maxCols = Array.from({ length: 6 }, (_, colIdx) => {
         let maxLen = 15;
         rawData.forEach(row => {
@@ -1174,9 +1197,6 @@ function processExcelExport(karyawan, unit, dateRange, unitLabel, start, end, fi
     XLSX.writeFile(workbook, `${filename}.xlsx`);
 }
 
-// --- ENGINE EXPORT KE PDF (FINAL: ANTI BLANK, ANTI MELOROT, GARIS TEBAL) ---
-// --- ENGINE EXPORT KE PDF (FIXED: FIT TO PAGE & RESPONSIVE TABLE) ---
-// --- ENGINE EXPORT KE PDF (FIXED: DIJAMIN NAIK KE ATAS & TIDAK BLANK) ---
 function processPdfExport(karyawan, unit, dateRange, unitLabel, start, end, filename) {
     const renderArea = $('#pdfRenderArea').empty().css({
         'display': 'block',
@@ -1320,6 +1340,123 @@ function processPdfExport(karyawan, unit, dateRange, unitLabel, start, end, file
         renderArea.css({ 'display': 'none' }).empty();
     });
 }
+
+// ============================================================
+// ENGINE FLAPPY BIRD GAME
+// ============================================================
+const canvas = document.getElementById('flappyCanvas');
+const ctx = canvas.getContext('2d');
+
+let birdY = 150, velocity = 0, gravity = 0.25, jump = -4.5;
+let score = 0, gameOver = false, gameStarted = false, animationId;
+let pipes = [];
+
+function resetGame() {
+    birdY = 150; velocity = 0; score = 0;
+    gameOver = false; gameStarted = false;
+    pipes = [];
+}
+
+function jumpBird() {
+    if (!gameStarted) { gameStarted = true; gameLoop(); }
+    if (!gameOver) { velocity = jump; }
+    else { resetGame(); gameStarted = true; gameLoop(); }
+}
+
+function drawBird() {
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(60, birdY, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(63, birdY - 3, 3, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (gameStarted && !gameOver) {
+        velocity += gravity;
+        birdY += velocity;
+
+        if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
+            let gap = 150;
+            let topHeight = Math.floor(Math.random() * (canvas.height - gap - 100)) + 30;
+            pipes.push({ x: canvas.width, top: topHeight, bottom: topHeight + gap, passed: false });
+        }
+
+        pipes.forEach(pipe => {
+            pipe.x -= 1.8;
+            if (60 + 10 > pipe.x && 60 - 10 < pipe.x + 40) {
+                if (birdY - 10 < pipe.top || birdY + 10 > pipe.bottom) { gameOver = true; }
+            }
+            if (!pipe.passed && pipe.x < 50) {
+                score++;
+                pipe.passed = true;
+            }
+        });
+
+        if (birdY + 10 >= canvas.height || birdY - 10 <= 0) { gameOver = true; }
+    }
+
+    ctx.fillStyle = '#10b981';
+    pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, 40, pipe.top);
+        ctx.fillRect(pipe.x, pipe.bottom, 40, canvas.height - pipe.bottom);
+    });
+
+    drawBird();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = '800 20px Montserrat';
+    ctx.fillText(`Score: ${score}`, 15, 30);
+
+    if (!gameStarted) {
+        ctx.fillStyle = '#334155';
+        ctx.font = '700 13px Montserrat';
+        ctx.textAlign = 'center';
+        ctx.fillText('Klik / Tekan [Spasi] untuk Mulai', canvas.width / 2, canvas.height / 2);
+        ctx.textAlign = 'left';
+    } else if (gameOver) {
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '800 22px Montserrat';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2 - 10);
+        ctx.fillStyle = '#475569';
+        ctx.font = '600 12px Montserrat';
+        ctx.fillText('Klik untuk Main Lagi', canvas.width / 2, canvas.height / 2 + 15);
+        ctx.textAlign = 'left';
+    } else {
+        animationId = requestAnimationFrame(gameLoop);
+    }
+}
+
+$('#btnOpenGame').on('click', function() {
+    $('#gameModal').removeClass('hidden');
+    resetGame();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBird();
+    ctx.fillStyle = '#334155';
+    ctx.font = '700 13px Montserrat';
+    ctx.textAlign = 'center';
+    ctx.fillText('Klik / Tekan [Spasi] untuk Mulai', canvas.width / 2, canvas.height / 2);
+    ctx.textAlign = 'left';
+});
+
+$('#btnCloseGame').on('click', function() {
+    $('#gameModal').addClass('hidden');
+    cancelAnimationFrame(animationId);
+});
+
+$('#flappyCanvas').on('click', jumpBird);
+$(document).on('keydown', function(e) {
+    if (e.code === 'Space' && !$('#gameModal').hasClass('hidden')) {
+        e.preventDefault();
+        jumpBird();
+    }
+});
 
 </script>
 
